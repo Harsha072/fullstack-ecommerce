@@ -1,0 +1,10 @@
+<nav class="navbar-sidebar">
+    <ul  class="list-unstyled navbar-list">
+        <li *ngFor= "let tempcategory of products_category" >
+            <!--routerLinkActive is jst css-->
+            <!-- <a routerLink="/category/1" routerLinkActive="active-link">Books</a> -->
+            <a routerLink="/category/{{tempcategory.id}}" class = "link_button" >{{tempcategory.category_name}}</a>
+        </li>
+       
+    </ul>
+</nav>
