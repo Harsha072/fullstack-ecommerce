@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  ecommerceApiUrl:"https://localhost:8443/api"
+  ecommerceApiUrl:"http://localhost:8080/api"
 };
 
 /*
