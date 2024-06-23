@@ -51,11 +51,22 @@ public class Product {
 	@CreationTimestamp
 	 private Date last_updated;
 
+	public ProductCategory getCategory() {
+		return category;
+	}
+
+	public void setCategory(ProductCategory category) {
+		this.category = category;
+	}
+
 	@ManyToOne
 	@JoinColumn(name="category_id", nullable = false)
 	private ProductCategory category;
-	 
-	 public Integer getId() {
+
+
+
+
+	public Integer getId() {
 		return id;
 	}
 	public void setId(Integer id) {
