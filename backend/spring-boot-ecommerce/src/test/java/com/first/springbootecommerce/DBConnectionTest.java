@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.mysql.cj.jdbc.DatabaseMetaData;
+
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -30,8 +30,7 @@ public class DBConnectionTest {
             java.sql.DatabaseMetaData metaData = connection.getMetaData();
             String dbName = metaData.getDatabaseProductName();
 
-            System.out.println("Connected to database: " + dbName);
-
+            System.out.println("Connected to database: " + metaData.getUserName());
         } catch (SQLException e) {
             e.printStackTrace();
         }

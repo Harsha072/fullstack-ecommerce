@@ -40,6 +40,7 @@ public class CheckoutServiceIntegrationTest {
             System.out.println("Connected to: " + dataSource.getClass().getName());
             java.sql.DatabaseMetaData metaData = connection.getMetaData();
             String dbName = metaData.getDatabaseProductName();
+            System.out.println(dbName);
         } catch (SQLException e) {
             e.printStackTrace();
         }
