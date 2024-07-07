@@ -132,5 +132,7 @@ class CheckoutServiceTest {
         verify(customerRepository, times(1)).findByEmail(anyString());
         verify(customerRepository, times(1)).save(customer);
     }
+    
+
 
 }
