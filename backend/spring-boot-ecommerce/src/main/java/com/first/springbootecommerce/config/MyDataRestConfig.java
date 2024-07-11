@@ -76,12 +76,12 @@ public class MyDataRestConfig implements RepositoryRestConfigurer {
 	
 	for (EntityType type : entites) {
 		entityClass.add(type.getJavaType());
-		System.out.println("inside entity class"+type.getJavaType());
+
 		
 	}
 	Class [] domainType = entityClass.toArray(new Class[0]);
 	for (Class class1 : domainType) {
-		System.out.println("class domain "+class1);
+
 	}
 	config.exposeIdsFor(domainType);
 	
