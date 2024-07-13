@@ -29,6 +29,18 @@ public class Customer {
 	
 	@Column(name="email")
 	private String email;
+
+	@Column(name="password")
+	private String password;
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
 	
 	@OneToMany(mappedBy = "customerId", cascade = CascadeType.ALL)
 	private Set <Order> orders = new HashSet<>();

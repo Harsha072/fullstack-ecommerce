@@ -1,49 +1,26 @@
-import { Component, OnInit } from '@angular/core';
-import myAppConfig from 'src/app/config/my-app-config';
-import * as OktaSignIn from '@okta/okta-signin-widget';
-import { OktaAuthService } from '@okta/okta-angular';
+import { Component } from '@angular/core';
+import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms'; // Add this line
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  styleUrls: ['./login.component.css'],
+  providers: [FormsModule] // Add this line
 })
-export class LoginComponent implements OnInit {
-   oktaSignin:any;
+export class LoginComponent {
+  credentials: any = { email: '', password: '' };
 
-  constructor(private oktaAuthService:OktaAuthService) {
-    this.oktaSignin= new OktaSignIn({
-      logo: 'assets/images/products/log1.png',
-      features:{
-        registration:true,
-      },
-      baseUrl:myAppConfig.oidc.issuer.split('/oauth2')[0],
-      clientId:myAppConfig.oidc.clientId,
-      redirectUri:myAppConfig.oidc.redirectUri,
-      authParams:{
-        pkce:true,
-        issuer:myAppConfig.oidc.issuer,
-        scopes :myAppConfig.oidc.scopes
-      }
+  constructor(private authService: AuthService, private router: Router) { }
+
+  login() {
+    console.log('Login credentials: ', this.credentials);
+    this.authService.login(this.credentials).subscribe((response) => {
+      localStorage.setItem('token', response);
+      this.router.navigate(['checkOut']);
+    }, error => {
+      console.error('Login error: ', error);
     });
-
-   }
-
-  ngOnInit(): void {
-    this.oktaSignin.remove();
-      this.oktaSignin.renderEl({
-        el:'#signin-widget'},
-        (response:any)=>{
-          if(response.status==='SUCCESS'){
-            this.oktaAuthService.signInWithRedirect();
-          }
-
-        },
-        (error:any)=>{
-          throw error;
-        }
-
-      )
-
   }
-
 }

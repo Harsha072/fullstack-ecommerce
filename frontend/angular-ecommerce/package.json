@@ -20,8 +20,6 @@
     "@angular/router": "~12.2.0",
     "@fortawesome/fontawesome-free": "^5.15.4",
     "@ng-bootstrap/ng-bootstrap": "^10.0.0",
-    "@okta/okta-angular": "^3.2.2",
-    "@okta/okta-signin-widget": "^5.11.0",
     "bootstrap": "^5.1.0",
     "rxjs": "~6.6.0",
     "tslib": "^2.3.0",
