@@ -1,0 +1,28 @@
+   @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+    
+    .caligraphy-text {
+        font-family: 'Great Vibes', cursive;
+        font-size: 36px;
+        color:darkorange;
+        padding-left: 17px;
+    }
+
+    .form-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .logo {
+        flex-grow: 1;
+    }
+
+    .au-input {
+        width: 60%;
+        padding: 10px;
+        margin-right: 10px;
+    }
+
+    .au-btn-submit {
+        padding: 10px 20px;
+    }

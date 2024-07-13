@@ -346,9 +346,9 @@ input.au-input.au-input-xl{
     margin: 0;
 }
 
-.menu-sidebar .navbar-list li {
+/* .menu-sidebar .navbar-list li {
     margin-bottom: 40px;
-}
+} */
 
 .menu-sidebar .navbar-list li a {
     display: block;
@@ -526,7 +526,7 @@ input.au-input.au-input-xl{
  */
 
 .product-box img {
-    width: 170px;
+    width: 200px;
 }
 
 .items select {
@@ -564,24 +564,28 @@ input.au-input.au-input-xl{
     font-weight: 500;
     color: #585858;
 } */
-.product-box h2 {
+/* .product-box h2 {
     font-size: 14px;
     padding-bottom: 0;
     font-weight: 500;
     color: #585858;
-}
+} */
+
+.product-box h2 {
+   margin:15px 0 0;
+font-weight:600;
+color:#232324
+} 
+
 
 .product-box a {
     text-decoration: none;
 }
 
+
+
 /* Additional specificity to ensure product box styles are applied */
-.product-box.product-box h2 {
-    font-size: 14px;
-    padding-bottom: 0;
-    font-weight: 500;
-    color: #585858;
-}
+
 .product-box a {
     text-decoration: none;
 }
@@ -817,7 +821,7 @@ a.primary-btn:hover{
     color: #FFFFFF;
     text-align: center;
     font-size: 18px; /* Medium size */
-    padding: 20px 40px; /* Medium padding */
+    padding: 2px 20px; /* Medium padding */
     width: auto; /* Adjust width based on content */
     transition: all 0.5s;
     cursor: pointer;
