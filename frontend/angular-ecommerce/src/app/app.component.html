@@ -1,6 +1,5 @@
-<div class="page-wrapper">
+<!-- <div class="page-wrapper">
 
-    <!-- MENU SIDEBAR-->
     <aside class="menu-sidebar d-none d-lg-block">
         <div class="logo">
             <a routerLink=" ">
@@ -12,27 +11,15 @@
         </div>
        
     </aside>
-    <!--end of side bar-->
+  
     <div class="page-container">
-        <!-- HEADER DESKTOP-->
+      
         <header class="header-desktop">
             <div class="section-content section-content-p30">
                 <div class="container-fluid">
                     <div class="header-wrap">
                         <app-search-product></app-search-product>
-                        <!-- <form class="form-header" onsubmit="return false;" method="GET">
-                            <input class="au-input au-input-xl" type="text" name="search"
-                                placeholder="Search for data ..." />
-                            <button class="au-btn-submit" type="submit">
-                                Search
-                            </button>
-                        </form> -->
-                        <!-- <div class="cart-area d-n">
-                            <a href="shopping-detail.html">
-                                <div class="total">19.22 <span> 2</span> </div> <i class="fa fa-shopping-cart"
-                                    aria-hidden="true"></i>
-                            </a>
-                        </div> -->
+                      
                         <app-login-status></app-login-status>
                         <app-cart-status></app-cart-status>
 
@@ -41,14 +28,14 @@
                 </div>
             </div>
         </header>
-        <!-- END HEADER DESKTOP-->
+     
 
-        <!-- MAIN CONTENT-->
+       
         <router-outlet></router-outlet>
-        <!-- <app-product-list></app-product-list> -->
+     
     </div>
 </div>
-<!-- END PAGE CONTAINER-->
+
 
 
 <footer>
@@ -57,4 +44,114 @@
         <li><a href="#">Contact Us</a></li>
         <li><a href="#">Help</a></li>
     </ul>
-</footer>
+</footer> -->
+
+<!-- <div class="page-wrapper">
+   
+    <aside class="menu-sidebar d-none d-lg-block">
+        <div class="logo">
+            <a routerLink=" ">
+                <img src="assets/images/products/log1.png" class="image_logo" alt="Logo">
+            </a>
+        </div>
+        <div class="menu-sidebar-content">
+            <app-product-category></app-product-category>
+        </div>
+    </aside>
+   
+
+    <div class="page-container">
+     
+        <header class="header-desktop">
+            <div class="section-content section-content-p30">
+                <div class="container-fluid">
+                    <div class="header-wrap">
+                        <app-search-product></app-search-product>
+                        <div class="header-icons">
+                            <app-login-status></app-login-status>
+                            <app-cart-status></app-cart-status>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+       
+
+      
+        <main>
+            <router-outlet></router-outlet>
+        </main>
+      
+    </div>
+</div>
+
+
+<footer>
+    <ul>
+        <li><a href="#">About Us</a></li>
+        <li><a href="#">Contact Us</a></li>
+        <li><a href="#">Help</a></li>
+    </ul>
+</footer> -->
+
+<div class="page-wrapper">
+   
+   <!-- MENU SIDEBAR-->
+<!-- <aside class="menu-sidebar" id="sidebar">
+    <div class="logo">
+        <a routerLink=" ">
+            <span style="font-family: 'Your Calligraphy Font', cursive; font-size: 24px; color: #333;">Travel Needs</span>
+        </a>
+    </div>
+
+    <div class="menu-sidebar-content">
+        <app-product-category></app-product-category>
+    </div>
+</aside> -->
+<!--end of side bar-->
+
+<div class="page-container">
+    <!-- HEADER DESKTOP-->
+    <header class="header-desktop">
+        <!-- Hamburger button -->
+      
+        <!-- END Hamburger button -->
+
+        <!-- <div class="logo">
+            <a routerLink=" ">
+                <img src="assets/images/products/new-logo.png" class="image_logo" alt="Logo">
+            </a>
+        </div> -->
+        <div class="header-wrap">
+            <app-search-product></app-search-product>
+            <div class="header-icons">
+                <app-login-status></app-login-status>
+                <app-cart-status></app-cart-status>
+            </div>
+        </div>
+    </header>
+    <nav class="navbar" id="navbar">
+        <div class="navbar-content">
+            <app-product-category></app-product-category>
+        </div>
+    </nav>
+    <!-- END HEADER DESKTOP-->
+
+    <!-- MAIN CONTENT-->
+    <main>
+        <router-outlet></router-outlet>
+        <!-- <app-product-list></app-product-list> -->
+    </main>
+    <!-- END MAIN CONTENT-->
+
+    <!-- FOOTER -->
+    <footer>
+        <ul>
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Contact Us</a></li>
+            <li><a href="#">Help</a></li>
+        </ul>
+    </footer>
+    <!-- END FOOTER -->
+</div>
+</div>

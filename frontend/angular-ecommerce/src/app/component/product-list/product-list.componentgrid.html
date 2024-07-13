@@ -9,7 +9,7 @@
                       
                       <a routerLink="/products/{{temp.id}}"><h2>{{temp.name}}</h2></a>
                       <div class="price">{{temp.unitPrice|currency:'INR'}}</div>
-                      <button (click) = "addToCart(temp)" id ="addCart"class="btn btn-primary btn-sm">Add to cart</button>
+                      <button (click) = "addToCart(temp)" id ="addCart"class="addToCartButton">Add to cart</button>
                   </div>
 
                 </div>

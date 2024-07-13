@@ -34,8 +34,8 @@ public class CheckoutServiceImpl implements CheckoutService {
 		order.setOrderTrackingNumber(orderTrackingnumber);
 		System.out.println("tracking number "+orderTrackingnumber);
 		//populatde order with orderItems
-		Set<OrderItem> orderItems = order.getOrderItems();
-		
+		Set<OrderItem> orderItems = purchase.getOrderItems();
+		System.out.println();
 		orderItems.forEach(item->order.add(item));
 		for (OrderItem orderItem : orderItems) {
 			System.out.println("order items "+orderItem);
@@ -48,17 +48,17 @@ public class CheckoutServiceImpl implements CheckoutService {
 		Customer customer = purchase.getCustomer();
 		String email = customer.getEmail();
 		//check if customer is already present based on email
-		
+
 		Customer customerFromDb = customerRepository.findByEmail(email);
-		
+
 		if(customerFromDb !=null) {
 			customer = customerFromDb;
 		}
-		
+
 		customer.add(order);
 		//save to the database
-	customerRepository.save(customer);	
-		//return a response
+	customerRepository.save(customer);
+//		return a response
 		return new PurchaseResponse(order.getOrderTrackingNumber()) ;
 	}
 

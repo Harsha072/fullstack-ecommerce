@@ -1,3 +1,4 @@
+
 import { Injector, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppComponent } from './app.component';
@@ -15,42 +16,32 @@ import { CheckoutComponent } from './component/checkout/checkout.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { LoginComponent } from './component/login/login.component';
 import { LoginStatusComponent } from './component/login-status/login-status.component';
-import {
-  OKTA_CONFIG,
-  OktaAuthModule,
-  OktaCallbackComponent,
-  OktaAuthGuard
-} from '@okta/okta-angular';
-import myAppConfig from './config/my-app-config';
+
+import { FormsModule } from '@angular/forms'; // Import FormsModule
 import { MembersPageComponent } from './component/members-page/members-page.component';
 import { OrderHistoryComponent } from './component/order-history/order-history.component';
-import { AuthInterceptorsService } from './services/auth-interceptors.service';
+import { AuthInterceptorService } from './services/auth-interceptors.service';
+import { RegisterComponent } from './component/register/register.component';
+import { AuthGuard } from './services/auth.guard';
 
 
-const oktaConfig = Object.assign({
-  onAuthRequired:(oktaAuth:any,injector:Injector)=>{
-    const router=injector.get(Router);
-    //redirect the user to custom login
-    router.navigate(['/login'])
-  }
-},myAppConfig.oidc)
 
-const routes :Routes=[
-  {path:'oders-history',component:OrderHistoryComponent,canActivate:[OktaAuthGuard]},
-  {path:'member',component:MembersPageComponent,canActivate:[OktaAuthGuard]},
-  {path:'login/callback',component:OktaCallbackComponent},
-  {path:'login',component:LoginComponent},
-  {path:'checkout',component:CheckoutComponent,canActivate:[OktaAuthGuard]},
-  {path:'cartdetails',component:CartDetailsComponent},
-  //we use product list component to reuse the view ,and not the search component
-  {path:'products/:id',component:ProductDetailsComponent},
-  {path:'search/:keyword',component:ProductListComponent},
-  {path:'category/:id',component:ProductListComponent},
-  {path:'category',component:ProductListComponent},
-  {path:'products',component:ProductListComponent},
-  {path:'',redirectTo:'/products',pathMatch:'full'},
-  {path:'**',redirectTo:'/products',pathMatch:'full'},
-]
+
+const routes: Routes = [
+  { path: 'orders-history', component: OrderHistoryComponent },
+  { path: 'member', component: MembersPageComponent },
+  { path: 'register', component: RegisterComponent },
+  { path: 'login', component: LoginComponent },
+  { path: 'checkout', component: CheckoutComponent, canActivate: [AuthGuard] },
+  { path: 'cartdetails', component: CartDetailsComponent },
+  { path: 'products/:id', component: ProductDetailsComponent },
+  { path: 'search/:keyword', component: ProductListComponent },
+  { path: 'category/:id', component: ProductListComponent },
+  { path: 'category', component: ProductListComponent },
+  { path: 'products', component: ProductListComponent },
+  { path: '', redirectTo: '/products', pathMatch: 'full' },
+  { path: '**', redirectTo: '/products', pathMatch: 'full' }
+];
 @NgModule({
   declarations: [
     AppComponent,
@@ -65,20 +56,21 @@ const routes :Routes=[
     LoginStatusComponent,
     MembersPageComponent,
     OrderHistoryComponent,
+    RegisterComponent,
   ],
   imports: [
        BrowserModule,
     HttpClientModule,
     RouterModule.forRoot(routes),
     NgbModule,
-    ReactiveFormsModule,
-    OktaAuthModule
+    ReactiveFormsModule, FormsModule,
+
 
 
   ],
   //specifying in providers will allow to use product service into other class
-  providers: [ProductServiceService,{provide:OKTA_CONFIG,useValue:oktaConfig},
-  {provide:HTTP_INTERCEPTORS,useClass:AuthInterceptorsService,multi:true}],
+  providers: [ProductServiceService,  AuthGuard,
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptorService, multi: true }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

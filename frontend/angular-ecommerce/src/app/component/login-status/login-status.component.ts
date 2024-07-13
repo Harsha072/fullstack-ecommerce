@@ -1,47 +1,51 @@
 import { Component, OnInit } from '@angular/core';
-import { OktaAuthService } from '@okta/okta-angular';
+ // EEnsure this isthis correct is the cyourect path to 
+import { Router } from '@angular/router';
+import { AuthService } from 'src/app/services/auth.service';
+
 @Component({
   selector: 'app-login-status',
   templateUrl: './login-status.component.html',
   styleUrls: ['./login-status.component.css']
 })
 export class LoginStatusComponent implements OnInit {
-isAuthenticated :boolean=false;
-userFullName:string;
-storage:Storage=sessionStorage;
-  constructor(private oktaAuthService: OktaAuthService) {
-   }
+  isAuthenticated: boolean = false;
+  userFullName: string;
+  storage: Storage = sessionStorage;
+
+  constructor(private authService: AuthService, private router: Router) { }
 
   ngOnInit(): void {
- //subscribe to authentication state changes
- this.oktaAuthService.$authenticationState.subscribe(
-(result)=>{
-  this.isAuthenticated=result;
-  this.getUserDetails();
-}
+    // Subscribe to authentication state changes
+    this.authService.isAuthenticated$.subscribe(
+      result => {
+        this.isAuthenticated = result;
+        this.getUserDetails();
+      }
+    );
 
- )
-
- 
-  }
-  getUserDetails() {
-
-    if(this.isAuthenticated){
-      //fetch logged in user detais
-      this.oktaAuthService.getUser().then(
-        res=>{
-          this.userFullName=res.name
-          //retrive the users email from authentication response
-          const theeEmail = res.email
-          this.storage.setItem('userEmail',JSON.stringify(theeEmail));
-        }
-      )
+    // Check authentication status on component load
+    this.isAuthenticated = this.authService.isLoggedIn();
+    if (this.isAuthenticated) {
+      this.getUserDetails();
     }
-}
-logout(){
-  this.oktaAuthService.signOut();
-}
   }
 
+  getUserDetails() {
+    if (this.isAuthenticated) {
+      const user = this.authService.getUserDetails();
+      if (user) {
+        this.userFullName = user.fullName;
+        // Retrieve the user's email from authentication response
+        const theEmail = user.email;
+        this.storage.setItem('userEmail', JSON.stringify(theEmail));
+      }
+    }
+  }
 
-
+  logout() {
+    this.authService.logout();
+    this.isAuthenticated = false;
+    this.router.navigate(['/login']); // Redirect to login page after logout
+  }
+}
