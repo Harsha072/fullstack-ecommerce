@@ -525,9 +525,7 @@ input.au-input.au-input-xl{
  * ----------------------------
  */
 
-.product-box img {
-    width: 200px;
-}
+
 
 .items select {
     width: 100px;
@@ -539,72 +537,8 @@ input.au-input.au-input-xl{
     margin-left: 5px;
 }
 
-.product-box {
-    margin-bottom: 60px;
-}
-
-.price {
-    margin: 15px 0 0;
-    font-weight: 800;
-    color: #0da8e4;
-}
-
-.product-box h1 {
-    font-size: 18px;
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 5px;
-    font-weight: 600;
-    padding-top: 12px;
-    margin-bottom: 7px;
-}
-
-/* .product-box h2 {
-    font-size: 14px;
-    padding-bottom: 0;
-    font-weight: 500;
-    color: #585858;
-} */
-/* .product-box h2 {
-    font-size: 14px;
-    padding-bottom: 0;
-    font-weight: 500;
-    color: #585858;
-} */
-
-.product-box h2 {
-   margin:15px 0 0;
-font-weight:600;
-color:#232324
-} 
 
 
-.product-box a {
-    text-decoration: none;
-}
-
-
-
-/* Additional specificity to ensure product box styles are applied */
-
-.product-box a {
-    text-decoration: none;
-}
-
-/* Add to cart button */
-.product-box .add-to-cart {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: #0da8e4;
-    color: #fff;
-    border-radius: 30px;
-    font-weight: 600;
-    text-transform: uppercase;
-    transition: background-color 0.3s ease;
-}
-
-/* .product-box .add-to-cart:hover {
-    background-color: #05143f;
-} */
 .addToCartButton {
     background-color: #0da8e4;
     border: 1px solid #007bff; /* Primary color border */

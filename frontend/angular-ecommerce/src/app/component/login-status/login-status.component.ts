@@ -16,24 +16,19 @@ export class LoginStatusComponent implements OnInit {
   constructor(private authService: AuthService, private router: Router) { }
 
   ngOnInit(): void {
-    // Subscribe to authentication state changes
     this.authService.isAuthenticated$.subscribe(
       result => {
         this.isAuthenticated = result;
         this.getUserDetails();
       }
     );
-
-    // Check authentication status on component load
-    this.isAuthenticated = this.authService.isLoggedIn();
-    if (this.isAuthenticated) {
-      this.getUserDetails();
-    }
   }
 
   getUserDetails() {
+    console.log("get user details being called")
     if (this.isAuthenticated) {
       const user = this.authService.getUserDetails();
+      console.log(user.fullName)
       if (user) {
         this.userFullName = user.fullName;
         // Retrieve the user's email from authentication response
@@ -46,6 +41,7 @@ export class LoginStatusComponent implements OnInit {
   logout() {
     this.authService.logout();
     this.isAuthenticated = false;
+    localStorage.removeItem('cartItems');
     this.router.navigate(['/login']); // Redirect to login page after logout
   }
 }

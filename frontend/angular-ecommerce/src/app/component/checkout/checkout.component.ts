@@ -35,7 +35,7 @@ storage:Storage=sessionStorage;
   ngOnInit(): void {
     //read the email from user email
 
-    const theEmail= JSON.parse(this.storage.getItem('userEmail'));
+    const theEmail= '';
     // build the form using form builder
     //customer is form group name
     const startMonth:number=new Date().getMonth()+1;

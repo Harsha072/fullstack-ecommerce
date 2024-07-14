@@ -4,12 +4,22 @@
             <div class="row">
                 <!--loop over collection of products-->
                 <div *ngFor="let temp of products" class="col-md-3">
-                  <div class="product-box">
+                  <!-- <div class="product-box">
                       <a routerLink="/products/{{temp.id}}"><img src="{{temp.imageUrl}}" class="img-responsive"/></a>
                       
                       <a routerLink="/products/{{temp.id}}"><h2>{{temp.name}}</h2></a>
                       <div class="price">{{temp.unitPrice|currency:'INR'}}</div>
                       <button (click) = "addToCart(temp)" id ="addCart"class="addToCartButton">Add to cart</button>
+                  </div> -->
+                  <div class="product-box">
+                    <a routerLink="/products/{{temp.id}}" class="product-link">
+                      <img src="{{temp.imageUrl}}" class="img-responsive product-image" />
+                    </a>
+                    <div class="product-details">
+                      <a routerLink="/products/{{temp.id}}" class="product-name">{{temp.name}}</a>
+                      <div class="price">{{temp.unitPrice | currency: 'INR'}}</div>
+                      <button (click)="addToCart(temp)" class="add-to-cart-button">Add to cart</button>
+                    </div>
                   </div>
 
                 </div>
