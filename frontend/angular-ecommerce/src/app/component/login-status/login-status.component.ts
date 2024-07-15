@@ -41,7 +41,6 @@ export class LoginStatusComponent implements OnInit {
   logout() {
     this.authService.logout();
     this.isAuthenticated = false;
-    localStorage.removeItem('cartItems');
     this.router.navigate(['/login']); // Redirect to login page after logout
   }
 }

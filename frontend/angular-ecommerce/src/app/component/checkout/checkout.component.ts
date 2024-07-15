@@ -212,10 +212,10 @@ console.log("order items in loop "+orderItems[i].unitPrice);
     purchase.orderItem=orderItems;
     for(let i =0;i<purchase.orderItem.length;i++){
       console.log("order items in purchase loop "+purchase.orderItem[i].unitPrice);
-      
+      console.log("order items in purchase loop "+purchase.orderItem[i]);
         }
-    console.log("purchae order items "+purchase.orderItem.length);
-    console.log("fonal purchase order"+purchase.order);
+   
+   
     // call rest api
     console.log(`the purchase ${purchase.billingAddress.city}`);
     this.checkOut.placeOrder(purchase).subscribe({next: response =>{

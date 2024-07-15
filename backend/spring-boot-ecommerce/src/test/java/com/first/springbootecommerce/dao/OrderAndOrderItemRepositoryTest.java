@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -63,7 +64,7 @@ public class OrderAndOrderItemRepositoryTest {
             order.add(orderItem);
 
             // Verify that the order item is added to the order
-            Set<OrderItem> orderItems = order.getOrderItems();
+            List<OrderItem> orderItems = order.getOrderItems();
             assertNotNull(orderItems);
             assertEquals(1, orderItems.size());
             assertTrue(orderItems.contains(orderItem));
@@ -84,7 +85,7 @@ public class OrderAndOrderItemRepositoryTest {
             order.getOrderItems().remove(orderItem);
 
             // Verify that the order item is removed from the order
-            Set<OrderItem> orderItems = order.getOrderItems();
+            List<OrderItem> orderItems = order.getOrderItems();
             System.out.println(orderItems);
            assertNotNull(orderItems);
             assertEquals(0, orderItems.size());

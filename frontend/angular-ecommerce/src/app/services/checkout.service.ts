@@ -12,6 +12,7 @@ export class CheckoutService {
   private purchaseUrl = environment.ecommerceApiUrl+'/checkout/purchase';
   constructor(private httpClient:HttpClient) { }
   placeOrder(purchase:Purchase):Observable<any>{
+    console.log(purchase.orderItem);
 return this.httpClient.post<Purchase>(this.purchaseUrl,purchase);
   }
 }

@@ -10,7 +10,7 @@ import com.first.springbootecommerce.Entities.Product;
 
 
 @RepositoryRestResource
-public interface ProductRepository extends JpaRepository<Product, Integer> {
+public interface ProductRepository extends JpaRepository<Product, Long> {
 	
 	Page<Product> findByCategoryId(@RequestParam("id") Long id, Pageable pageable);
 	

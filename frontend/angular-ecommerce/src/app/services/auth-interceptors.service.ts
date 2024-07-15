@@ -24,6 +24,7 @@ export class AuthInterceptorService implements HttpInterceptor {
     if (securedEndpoints.some(url => request.urlWithParams.includes(url))) {
       // get the access token
       const token = this.authService.getToken();
+      console.log("got token", token)
       if (token) {
         request = request.clone({
           setHeaders: {

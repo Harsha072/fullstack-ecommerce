@@ -15,9 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -41,7 +39,7 @@ class CheckoutServiceUnitTest {
     private Address shippingAddress;
     private Address billingAddress;
     private Order order;
-    private Set<OrderItem> orderItems;
+    private List<OrderItem> orderItems;
 
     @BeforeEach
     void setUp() {
@@ -78,7 +76,7 @@ class CheckoutServiceUnitTest {
 
 
         Product prod = new Product();
-        prod.setId(1);
+        prod.setId(1l);
         prod.setName("Samsung");
         prod.setCategory(category);
         prod.setSku("MobileSKU");
@@ -90,9 +88,9 @@ class CheckoutServiceUnitTest {
         prod.setDescription("A good mobile");
         prod.setActive(true);
 
-        orderItems = new HashSet<>();
+        orderItems = new ArrayList<>();
         OrderItem item = new OrderItem();
-        item.setProductId(prod);
+        item.setProductId(prod.getId());
         item.setQuantity(1);
         item.setUnitPrice(new BigDecimal("50.00"));
         orderItems.add(item);
