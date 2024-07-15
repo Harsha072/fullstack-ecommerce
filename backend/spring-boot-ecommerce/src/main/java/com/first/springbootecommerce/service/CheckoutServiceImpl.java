@@ -1,6 +1,7 @@
 package com.first.springbootecommerce.service;
 
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -28,14 +29,15 @@ public class CheckoutServiceImpl implements CheckoutService {
 
 		//retrieve the order from dto
 		Order order = purchase.getOrder();
+		System.out.println(purchase.getOrderItems());
 		System.out.println("incoming order "+order.getTotalPrice());
 		//generate tracking number
 		String orderTrackingnumber = generateOrderTrackingNumber();
 		order.setOrderTrackingNumber(orderTrackingnumber);
 		System.out.println("tracking number "+orderTrackingnumber);
 		//populatde order with orderItems
-		Set<OrderItem> orderItems = purchase.getOrderItems();
-		System.out.println();
+		List<OrderItem> orderItems = purchase.getOrderItems();
+
 		orderItems.forEach(item->order.add(item));
 		for (OrderItem orderItem : orderItems) {
 			System.out.println("order items "+orderItem);

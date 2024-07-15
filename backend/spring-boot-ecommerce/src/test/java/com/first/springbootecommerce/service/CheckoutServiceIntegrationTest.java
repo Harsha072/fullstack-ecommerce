@@ -30,6 +30,7 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Set;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -78,7 +79,7 @@ public class CheckoutServiceIntegrationTest {
         productCategory.save(category);
 
         prod = new Product();
-        prod.setId(1);
+        prod.setId(1l);
         prod.setName("Exploring javascript");
         prod.setCategory(category);
         prod.setSku("MobileSKU");
@@ -147,11 +148,11 @@ public class CheckoutServiceIntegrationTest {
         orderItem1.setUnitPrice(new BigDecimal("50.00"));
         orderItem1.setQuantity(1);
         orderItem1.setOrderId(order);
-        orderItem1.setProductId(prod);
+        orderItem1.setProductId(prod.getId());
 
 
 
-        purchase = new Purchase(customer, shippingAddress, billingAddress, order, Set.of(orderItem1));
+        purchase = new Purchase(customer, shippingAddress, billingAddress, order, List.of(orderItem1));
         MvcResult result = mockMvc.perform(post("/api/checkout/purchase")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(purchase)))
@@ -208,11 +209,11 @@ public class CheckoutServiceIntegrationTest {
         orderItem1.setUnitPrice(new BigDecimal("50.00"));
         orderItem1.setQuantity(1);
         orderItem1.setOrderId(order);
-        orderItem1.setProductId(prod);
+        orderItem1.setProductId(prod.getId());
 
 
 
-        purchase = new Purchase(customer, shippingAddress, billingAddress, order, Set.of(orderItem1));
+        purchase = new Purchase(customer, shippingAddress, billingAddress, order, List.of(orderItem1));
         MvcResult result = mockMvc.perform(post("/api/checkout/purchase")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(purchase)))

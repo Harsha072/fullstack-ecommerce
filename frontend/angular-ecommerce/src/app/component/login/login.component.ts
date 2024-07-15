@@ -18,7 +18,14 @@ export class LoginComponent {
     console.log('Login credentials: ', this.credentials);
     this.authService.login(this.credentials).subscribe((response) => {
       localStorage.setItem('token', response);
-      this.router.navigate(['checkOut']);
+      if(localStorage.getItem('cartItems')) {
+        this.router.navigate(['checkout']);
+      }
+      else{
+        this.router.navigate(['products']);
+      }
+  
+     
     }, error => {
       console.error('Login error: ', error);
     });

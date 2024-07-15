@@ -21,7 +21,7 @@ public class Product {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="id")
-	private Integer  id;
+	private Long  id;
 	
 	 
 	
@@ -66,10 +66,10 @@ public class Product {
 
 
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	public String getSku() {

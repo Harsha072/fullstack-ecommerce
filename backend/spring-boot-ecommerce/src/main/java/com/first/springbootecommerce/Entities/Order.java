@@ -1,9 +1,7 @@
 package com.first.springbootecommerce.Entities;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -65,7 +63,7 @@ public class Order {
 	
 	
 	@OneToMany(cascade = CascadeType.ALL,mappedBy = "orderId")
-	private Set<OrderItem> orderItems = new HashSet<>();
+	private List<OrderItem> orderItems = new ArrayList<>();
 	
 	
 	
@@ -152,11 +150,11 @@ public class Order {
 		this.billingAddress = billingAddress;
 	}
 
-	public Set<OrderItem> getOrderItems() {
+	public List<OrderItem> getOrderItems() {
 		return orderItems;
 	}
 
-	public void setOrderItems(Set<OrderItem> orderItems) {
+	public void setOrderItems(List<OrderItem> orderItems) {
 		this.orderItems = orderItems;
 	}
 
@@ -165,7 +163,7 @@ public class Order {
 	public void add(OrderItem item) {
 		if(item!=null) {
 			if(orderItems == null) {
-				orderItems= new HashSet<>();
+				orderItems= new ArrayList<>();
 			}
 			orderItems.add(item);
 			item.setOrderId(this);

@@ -39,6 +39,7 @@ this.cartService.addToCartService(cartItem);
 
   }
   decrementQuantity(cartItem:CartItem){
+    console.log("decrementing quantity");
     this.cartService.decrementQuantityService(cartItem);
     
       }

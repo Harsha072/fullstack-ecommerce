@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 
@@ -10,7 +10,8 @@ import { environment } from 'src/environments/environment';
 export class AuthService {
 
   private baseUrl = environment.ecommerceApiUrl;
-  isAuthenticated$: any;
+  private authState = new BehaviorSubject<boolean>(this.isLoggedIn());
+  isAuthenticated$ = this.authState.asObservable();
 
   constructor(private http: HttpClient) { }
 
@@ -34,7 +35,7 @@ export class AuthService {
         console.log("response for log in ",response)
         if (response && response.token) {
           localStorage.setItem('authToken', response.token);
-          
+          this.authState.next(true);
         }
       })
     );
@@ -56,6 +57,8 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('cartItems');
+    this.authState.next(false);
   }
 
   getToken(): string | null {

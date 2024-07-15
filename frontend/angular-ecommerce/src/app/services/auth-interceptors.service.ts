@@ -17,13 +17,14 @@ export class AuthInterceptorService implements HttpInterceptor {
 
   private async handleAccess(request: HttpRequest<any>, next: HttpHandler): Promise<HttpEvent<any>> {
     // only add access token for secured endpoints
-    
+    console.log(request.urlWithParams);
     const theEndpoint = environment.ecommerceApiUrl + '/orders';
     const securedEndpoints = [theEndpoint];
 
     if (securedEndpoints.some(url => request.urlWithParams.includes(url))) {
       // get the access token
       const token = this.authService.getToken();
+      console.log("got token", token)
       if (token) {
         request = request.clone({
           setHeaders: {

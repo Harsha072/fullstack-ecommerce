@@ -9,6 +9,7 @@ export class CartService {
 
 //array of cart item object
   cartItems :CartItem[]=[];
+   cartStorageItems: any[] = [];
   //this value of totalPrice can be sent to all subscribers using subject
   totalPrice:Subject<number> = new BehaviorSubject<number>(0);
   totalQuantity:Subject<number> = new BehaviorSubject<number>(0);
@@ -91,10 +92,28 @@ this.persistCartItems();
        this.computeCartTotals();
      }
   }
+
   removeItem(cartItem: CartItem) {
-    const itemIndex = this.cartItems.findIndex(temp=>temp.id == cartItem.id);
-    if(itemIndex>-1){
-      this.cartItems.splice(itemIndex,1);
+    
+    const itemIndex = this.cartItems.findIndex(temp => temp.id === cartItem.id);
+  
+   
+    if (itemIndex > -1) {
+    
+      const cartItemsFromStorage = localStorage.getItem('cartItems');
+      if (cartItemsFromStorage) {
+      
+        this.cartStorageItems = JSON.parse(cartItemsFromStorage);
+  
+        this.cartStorageItems.splice(itemIndex, 1);
+  
+  
+        localStorage.setItem('cartItems', JSON.stringify(this.cartStorageItems));
+  
+        
+        this.cartItems.splice(itemIndex, 1);
+        this.computeCartTotals();
+      }
     }
   }
 }

@@ -1,7 +1,9 @@
-<nav >
-    <nav class="navbar navbar-dark bg-dark">
-            <div *ngFor="let tempcategory of products_category">
-                <a routerLink="/category/{{tempcategory.id}}" class="link_button">{{tempcategory.category_name}}</a>
-            </div>
+<div *ngIf="isAuthenticated">
+    <nav>
+        <nav class="navbar navbar-dark bg-dark">
+                <div *ngFor="let tempcategory of products_category">
+                    <a routerLink="/category/{{tempcategory.id}}" class="link_button">{{tempcategory.category_name}}</a>
+                </div>
+        </nav>
     </nav>
-</nav>
+</div>

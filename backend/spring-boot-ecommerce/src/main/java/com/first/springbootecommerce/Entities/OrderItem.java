@@ -32,9 +32,9 @@ public class OrderItem {
 	private int quantity;
 	
 	
-	@OneToOne(cascade = CascadeType.ALL)
+//	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "product_id")
-	private Product productId;
+	private Long productId;
 	
 	public Order getOrderId() {
 		return orderId;
@@ -80,11 +80,11 @@ public class OrderItem {
 		this.quantity = quantity;
 	}
 
-	public Product getProductId() {
+	public Long getProductId() {
 		return productId;
 	}
 
-	public void setProductId(Product productId) {
+	public void setProductId(Long productId) {
 		this.productId = productId;
 	}
 	
