@@ -64,7 +64,7 @@ public class OrderAndOrderItemRepositoryTest {
             order.add(orderItem);
 
             // Verify that the order item is added to the order
-            List<OrderItem> orderItems = order.getOrderItems();
+            Set<OrderItem> orderItems = order.getOrderItems();
             assertNotNull(orderItems);
             assertEquals(1, orderItems.size());
             assertTrue(orderItems.contains(orderItem));
@@ -85,7 +85,7 @@ public class OrderAndOrderItemRepositoryTest {
             order.getOrderItems().remove(orderItem);
 
             // Verify that the order item is removed from the order
-            List<OrderItem> orderItems = order.getOrderItems();
+            Set<OrderItem> orderItems = order.getOrderItems();
             System.out.println(orderItems);
            assertNotNull(orderItems);
             assertEquals(0, orderItems.size());

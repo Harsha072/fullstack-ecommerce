@@ -22,7 +22,7 @@ public class CheckoutServiceImpl implements CheckoutService {
 
 	@Autowired
 	private CustomerRepository customerRepository;
-	
+
 	@Override
 	@Transactional
 	public PurchaseResponse placeOrder(Purchase purchase) {
@@ -36,12 +36,10 @@ public class CheckoutServiceImpl implements CheckoutService {
 		order.setOrderTrackingNumber(orderTrackingnumber);
 		System.out.println("tracking number "+orderTrackingnumber);
 		//populatde order with orderItems
-		List<OrderItem> orderItems = purchase.getOrderItems();
+		Set<OrderItem> orderItems = purchase.getOrderItems();
 
 		orderItems.forEach(item->order.add(item));
-		for (OrderItem orderItem : orderItems) {
-			System.out.println("order items "+orderItem);
-		}
+
 		//populate order with billing address and shipping address
 		order.setBillingAddress(purchase.getBillingAddress());
 		System.out.println("type of billing address" + purchase.getBillingAddress().getState());
@@ -52,14 +50,14 @@ public class CheckoutServiceImpl implements CheckoutService {
 		//check if customer is already present based on email
 
 		Customer customerFromDb = customerRepository.findByEmail(email);
-
+		System.out.println(customerFromDb);
 		if(customerFromDb !=null) {
 			customer = customerFromDb;
 		}
 
 		customer.add(order);
 		//save to the database
-	customerRepository.save(customer);
+		customerRepository.save(customer);
 //		return a response
 		return new PurchaseResponse(order.getOrderTrackingNumber()) ;
 	}
@@ -68,6 +66,6 @@ public class CheckoutServiceImpl implements CheckoutService {
 //genearate ramdom uuid
 		return UUID.randomUUID().toString();
 	}
-	
+
 
 }
