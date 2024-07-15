@@ -14,7 +14,7 @@ public class Purchase {
 	private Address shippingAddress;
 	private Address billingAddress;
 	private Order order;
-	private List<OrderItem> orderItem;
+	private Set<OrderItem> orderItem;
 
 	// Getters and setters
 
@@ -50,16 +50,16 @@ public class Purchase {
 		this.order = order;
 	}
 
-	public List<OrderItem> getOrderItems() {
+	public Set<OrderItem> getOrderItems() {
 		return orderItem;
 	}
 
-	public void setOrderItems(List<OrderItem> orderItem) {
+	public void setOrderItems(Set<OrderItem> orderItem) {
 		this.orderItem = orderItem;
 	}
 
 	public Purchase(Customer customer, Address shippingAddress, Address billingAddress, Order order,
-					List<OrderItem> orderItem) {
+					Set<OrderItem> orderItem) {
 		super();
 		this.customer = customer;
 		this.shippingAddress = shippingAddress;

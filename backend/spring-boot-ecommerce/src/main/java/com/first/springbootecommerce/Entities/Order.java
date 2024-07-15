@@ -63,7 +63,7 @@ public class Order {
 	
 	
 	@OneToMany(cascade = CascadeType.ALL,mappedBy = "orderId")
-	private List<OrderItem> orderItems = new ArrayList<>();
+	private Set<OrderItem> orderItems = new HashSet<>();
 	
 	
 	
@@ -150,11 +150,11 @@ public class Order {
 		this.billingAddress = billingAddress;
 	}
 
-	public List<OrderItem> getOrderItems() {
+	public Set<OrderItem> getOrderItems() {
 		return orderItems;
 	}
 
-	public void setOrderItems(List<OrderItem> orderItems) {
+	public void setOrderItems(Set<OrderItem> orderItems) {
 		this.orderItems = orderItems;
 	}
 
@@ -163,7 +163,7 @@ public class Order {
 	public void add(OrderItem item) {
 		if(item!=null) {
 			if(orderItems == null) {
-				orderItems= new ArrayList<>();
+				orderItems= new HashSet<>();
 			}
 			orderItems.add(item);
 			item.setOrderId(this);

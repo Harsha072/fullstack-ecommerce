@@ -21,6 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -30,6 +31,7 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -40,6 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
+@Transactional
 public class CheckoutServiceIntegrationTest {
 
     @Autowired
@@ -58,10 +61,10 @@ public class CheckoutServiceIntegrationTest {
     private OrderRepository orderRepository;
 
     @Autowired
-    private ProductRepository product;
+    private ProductRepository productRepository;
 
     @Autowired
-    private ProductCategoryRepository productCategory;
+    private ProductCategoryRepository productCategoryRepository;
 
     private Purchase purchase;
     private Customer customer;
@@ -69,17 +72,18 @@ public class CheckoutServiceIntegrationTest {
     private Address billingAddress;
     private Order order;
     private Product prod;
+    private ProductCategory category;
     private Set<OrderItem> orderItems;
 
     @BeforeEach
     public void setUp() {
-        ProductCategory category = new ProductCategory();
+        category = new ProductCategory();
         category.setId(1L);
         category.setCategory_name("Books");
-        productCategory.save(category);
+        category = productCategoryRepository.saveAndFlush(category); // Ensure ID is generated and committed
 
         prod = new Product();
-        prod.setId(1l);
+        prod.setId(3L);
         prod.setName("Exploring javascript");
         prod.setCategory(category);
         prod.setSku("MobileSKU");
@@ -91,7 +95,13 @@ public class CheckoutServiceIntegrationTest {
         prod.setDescription("A good mobile");
         prod.setActive(true);
 
-        product.save(prod);
+        prod = productRepository.saveAndFlush(prod);
+
+        customer = new Customer();
+        customer.setFirstName("John");
+        customer.setLastName("Doe");
+        customer.setEmail("john.doe@example.com");
+        customerRepository.saveAndFlush(customer);
 
     }
 
@@ -106,14 +116,24 @@ public class CheckoutServiceIntegrationTest {
         }
     }
 
+
+
+    @Test
+    public void checkIfProductAndProductCategoryIsPresent() {
+        // Retrieve Product from database
+        Product savedProduct = productRepository.findById(prod.getId()).orElse(null);
+        assertNotNull(savedProduct, "Product should not be null");
+        assertEquals(prod.getName(), savedProduct.getName(), "Product name should match");
+
+        // Retrieve ProductCategory from database
+        ProductCategory savedCategory = productCategoryRepository.findById(category.getId()).orElse(null);
+        assertNotNull(savedCategory, "ProductCategory should not be null");
+        assertEquals(category.getCategory_name(), savedCategory.getCategory_name(), "ProductCategory name should match");
+    }
+
+
     @Test
     public void checkoutServiceTest() throws Exception {
-
-        customer = new Customer();
-        customer.setFirstName("John");
-        customer.setLastName("Doe");
-        customer.setEmail("john.doe@example.com");
-        customerRepository.save(customer);
 
         shippingAddress = new Address();
         shippingAddress.setCity("New York");
@@ -152,7 +172,7 @@ public class CheckoutServiceIntegrationTest {
 
 
 
-        purchase = new Purchase(customer, shippingAddress, billingAddress, order, List.of(orderItem1));
+        purchase = new Purchase(customer, shippingAddress, billingAddress, order, Set.of(orderItem1));
         MvcResult result = mockMvc.perform(post("/api/checkout/purchase")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(purchase)))
@@ -165,16 +185,12 @@ public class CheckoutServiceIntegrationTest {
 
         assertNotNull(orderTrackingNumber);
         assertFalse(orderTrackingNumber.isEmpty());
+
 
     }
     @Test
     public void checkoutServiceTestWhenPurchaseIsEmpty() throws Exception {
 
-        customer = new Customer();
-        customer.setFirstName("John");
-        customer.setLastName("Doe");
-        customer.setEmail("john.doe@example.com");
-        customerRepository.save(customer);
 
         shippingAddress = new Address();
         shippingAddress.setCity("New York");
@@ -213,10 +229,11 @@ public class CheckoutServiceIntegrationTest {
 
 
 
-        purchase = new Purchase(customer, shippingAddress, billingAddress, order, List.of(orderItem1));
+        Purchase emptyPurchase = new Purchase(customer, shippingAddress, billingAddress, order, Collections.emptySet());
+
         MvcResult result = mockMvc.perform(post("/api/checkout/purchase")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(purchase)))
+                        .content(objectMapper.writeValueAsString(emptyPurchase)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
@@ -226,6 +243,7 @@ public class CheckoutServiceIntegrationTest {
 
         assertNotNull(orderTrackingNumber);
         assertFalse(orderTrackingNumber.isEmpty());
+
 
     }
 }

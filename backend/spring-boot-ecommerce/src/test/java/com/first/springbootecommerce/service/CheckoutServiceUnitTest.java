@@ -39,7 +39,7 @@ class CheckoutServiceUnitTest {
     private Address shippingAddress;
     private Address billingAddress;
     private Order order;
-    private List<OrderItem> orderItems;
+    private Set<OrderItem> orderItems;
 
     @BeforeEach
     void setUp() {
@@ -88,7 +88,7 @@ class CheckoutServiceUnitTest {
         prod.setDescription("A good mobile");
         prod.setActive(true);
 
-        orderItems = new ArrayList<>();
+        orderItems = new HashSet<>();
         OrderItem item = new OrderItem();
         item.setProductId(prod.getId());
         item.setQuantity(1);
