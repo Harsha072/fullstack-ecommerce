@@ -1,44 +1,49 @@
 pipeline {
     agent any
-
-    environment {
-        NODEJS_HOME = tool name: 'NodeJS 14' // Ensure you have NodeJS installed in Jenkins
-        PATH = "${NODEJS_HOME}/bin:${env.PATH}"
-        MAVEN_HOME = tool name: 'Maven 3.6' // Ensure you have Maven installed in Jenkins
-    }
-
+    
     stages {
-        stage('Checkout') {
+        stage('Clone Repository') {
             steps {
-                // Clone the repository
-                git 'https://github.com/Harsha072/fullstack-ecommerce.git'
+                // Checkout the code from Git
+                checkout scm
             }
         }
-
-        stage('Frontend Build and Test') {
+        
+        stage('Build') {
             steps {
-                dir('frontend/angular-ecommerce') {
-                    // Install Node.js dependencies
-                    sh 'npm install'
-
-                    // Run unit tests
-                    sh 'npm test'
-
-                    // Build the Angular application
-                    sh 'npm run build'
-                }
+                // Print a message to indicate the build stage
+                echo 'Building the project...'
+                
+                // Example build command
+                sh 'echo "Running build command..."'
             }
         }
-
-       
-       
-
+        
+        stage('Test') {
+            steps {
+                // Print a message to indicate the test stage
+                echo 'Running tests...'
+                
+                // Example test command
+                sh 'echo "Running test command..."'
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                // Print a message to indicate the deploy stage
+                echo 'Deploying the project...'
+                
+                // Example deploy command
+                sh 'echo "Running deploy command..."'
+            }
+        }
+    }
+    
     post {
-        success {
-            echo 'Build and tests succeeded!'
-        }
-        failure {
-            echo 'Build or tests failed.'
+        always {
+            // Print a message to indicate the pipeline completion
+            echo 'Pipeline completed.'
         }
     }
 }
