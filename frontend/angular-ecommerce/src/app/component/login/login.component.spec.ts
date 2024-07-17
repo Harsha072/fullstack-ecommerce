@@ -18,7 +18,7 @@ class MockAuthService {
 
 class MockRouter {
   navigate(path: string[]) {
-    // Mock navigation function
+   
   }
 }
 
