@@ -42,23 +42,7 @@ pipeline {
             }
         }
 
-        stage('Docker Build and Push') {
-            steps {
-                script {
-                    // Build Docker images for frontend and backend
-                    sh 'docker build -t your-dockerhub-username/angular-ecommerce:latest frontend/angular-ecommerce'
-                    sh 'docker build -t your-dockerhub-username/springboot-ecommerce:latest backend/springboot-ecommerce'
-
-                    // Login to Docker Hub
-                    sh 'echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin'
-
-                    // Push Docker images to Docker Hub
-                    sh 'docker push harshaswamy789475/angular-ecommerce:latest'
-                    sh 'docker push harshaswamy789475/springboot-ecommerce:latest'
-                }
-            }
-        }
-    }
+       
 
     post {
         success {
