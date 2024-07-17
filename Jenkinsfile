@@ -2,10 +2,10 @@ pipeline {
     agent any
     
     stages {
-        stage('Clone Repository') {
+        stage('Checkout') {
             steps {
-                // Checkout the code from Git
-                checkout scm
+                // Checkout the repository
+                git 'https://github.com/Harsha072/fullstack-ecommerce.git'
             }
         }
         
