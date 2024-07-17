@@ -9,7 +9,7 @@ import { environment } from 'src/environments/environment';
 })
 export class AuthService {
 
-  private baseUrl = environment.ecommerceApiUrl;
+   baseUrl = environment.ecommerceApiUrl;
   private authState = new BehaviorSubject<boolean>(this.isLoggedIn());
   isAuthenticated$ = this.authState.asObservable();
 
@@ -23,16 +23,9 @@ export class AuthService {
   }
 
   login(credentials: any): Observable<any> {
-    console.log("credentials for log in ",credentials);
-      // Set headers including Authorization header
-      // const headers = new HttpHeaders({
-      //   'Content-Type': 'application/json',
-      //   'Authorization': `Bearer ${localStorage.getItem('authToken')}` // Assuming you store token in localStorage
-      // });
     return this.http.post<{ token: string }>(`${this.baseUrl}/auth/login`, credentials).pipe(
     
       tap(response => {
-        console.log("response for log in ",response)
         if (response && response.token) {
           localStorage.setItem('authToken', response.token);
           this.authState.next(true);
@@ -50,8 +43,11 @@ export class AuthService {
     if (!token) {
       return null;
     }
+ 
     const payload = token.split('.')[1];
+    console.log(payload);
     const decodedPayload = atob(payload);
+    console.log(decodedPayload);
     return JSON.parse(decodedPayload);
   }
 

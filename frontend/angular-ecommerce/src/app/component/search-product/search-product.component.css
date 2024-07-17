@@ -16,11 +16,13 @@
     .logo {
         flex-grow: 1;
     }
-
-    .au-input {
-        width: 60%;
-        padding: 10px;
-        margin-right: 10px;
+    .au-input-sm {
+        width: 700px;  /* Adjust the width as needed */
+        height: 20px;  /* Adjust the height as needed */
+        padding: 20px ;  /* Adjust padding as needed */
+        font-size: 14px;  /* Adjust font size as needed */
+        margin-right: 30px;
+        box-sizing: border-box;  /* Ensure padding doesn't affect the total width/height */
     }
 
     .au-btn-submit {
