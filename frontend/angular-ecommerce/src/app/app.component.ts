@@ -6,7 +6,7 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  title = 'angular-ecommerce';
+  title = 'Travel Buddy Shop';
 
   ngOnInit() {
     document.addEventListener('DOMContentLoaded', function () {
