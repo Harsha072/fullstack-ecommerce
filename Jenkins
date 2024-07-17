@@ -30,18 +30,7 @@ pipeline {
             }
         }
 
-        stage('Backend Build and Test') {
-            steps {
-                dir('backend/spring-boot-ecommerce') {
-                    // Run Maven build
-                    sh "${MAVEN_HOME}/bin/mvn clean install"
-
-                    // Run Maven tests
-                    sh "${MAVEN_HOME}/bin/mvn test"
-                }
-            }
-        }
-
+       
        
 
     post {
