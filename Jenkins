@@ -1,0 +1,71 @@
+pipeline {
+    agent any
+
+    environment {
+        NODEJS_HOME = tool name: 'NodeJS 14' // Ensure you have NodeJS installed in Jenkins
+        PATH = "${NODEJS_HOME}/bin:${env.PATH}"
+        MAVEN_HOME = tool name: 'Maven 3.6' // Ensure you have Maven installed in Jenkins
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Clone the repository
+                git 'https://github.com/your-repo/fullstack-ecommerce.git'
+            }
+        }
+
+        stage('Frontend Build and Test') {
+            steps {
+                dir('frontend/angular-ecommerce') {
+                    // Install Node.js dependencies
+                    sh 'npm install'
+
+                    // Run unit tests
+                    sh 'npm test'
+
+                    // Build the Angular application
+                    sh 'npm run build'
+                }
+            }
+        }
+
+        stage('Backend Build and Test') {
+            steps {
+                dir('backend/springboot-ecommerce') {
+                    // Run Maven build
+                    sh "${MAVEN_HOME}/bin/mvn clean install"
+
+                    // Run Maven tests
+                    sh "${MAVEN_HOME}/bin/mvn test"
+                }
+            }
+        }
+
+        stage('Docker Build and Push') {
+            steps {
+                script {
+                    // Build Docker images for frontend and backend
+                    sh 'docker build -t your-dockerhub-username/angular-ecommerce:latest frontend/angular-ecommerce'
+                    sh 'docker build -t your-dockerhub-username/springboot-ecommerce:latest backend/springboot-ecommerce'
+
+                    // Login to Docker Hub
+                    sh 'echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin'
+
+                    // Push Docker images to Docker Hub
+                    sh 'docker push harshaswamy789475/angular-ecommerce:latest'
+                    sh 'docker push harshaswamy789475/springboot-ecommerce:latest'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Build and tests succeeded!'
+        }
+        failure {
+            echo 'Build or tests failed.'
+        }
+    }
+}
