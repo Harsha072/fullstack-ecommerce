@@ -3,10 +3,12 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-     "start": "set NODE_OPTIONS=--openssl-legacy-provider && ng serve",
-    "build": "ng build",
+    "start": "set NODE_OPTIONS=--openssl-legacy-provider && ng serve",
+    "build": "ng build --prod",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:ci": "ng test --browsers ChromeHeadless --watch=false"
+    
   },
   "private": true,
   "dependencies": {
