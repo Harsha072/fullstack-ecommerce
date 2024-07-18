@@ -15,7 +15,7 @@ pipeline {
                 echo 'Building the project...'
                 
                 // Example build command
-                sh 'echo "Running build command..."'
+                bat 'echo Running build command...'
             }
         }
         
@@ -25,7 +25,7 @@ pipeline {
                 echo 'Running tests...'
                 
                 // Example test command
-                sh 'echo "Running test command..."'
+                bat 'echo Running test command...'
             }
         }
         
@@ -35,7 +35,7 @@ pipeline {
                 echo 'Deploying the project...'
                 
                 // Example deploy command
-                sh 'echo "Running deploy command..."'
+                bat 'echo Running deploy command...'
             }
         }
     }
@@ -43,7 +43,7 @@ pipeline {
     post {
         always {
             // Print a message to indicate the pipeline completion
-            echo 'Pipeline completed.'
+            echo 'Pipeline completed....'
         }
     }
 }
