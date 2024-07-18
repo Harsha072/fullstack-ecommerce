@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        NODEJS_HOME = tool name: 'NodeJS 16.20.2' // Ensure you have NodeJS installed in Jenkins
-        PATH = "${NODEJS_HOME}/bin:${env.PATH}"
-    }
 
     stages {
         stage('Checkout') {
