@@ -12,7 +12,7 @@ pipeline {
         
         stage('Install Dependencies') {
             steps {
-                dir('frontend') {
+                dir('frontend/angular-ecommerce') {
                     // Install Node.js dependencies
                     bat 'npm install'
                 }
@@ -21,7 +21,7 @@ pipeline {
         
         stage('Run Tests') {
             steps {
-                dir('frontend') {
+                dir('frontend/angular-ecommerce') {
                     // Run unit tests
                     bat 'npm test'
                 }
