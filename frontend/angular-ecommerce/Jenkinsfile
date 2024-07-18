@@ -1,25 +1,44 @@
 pipeline {
     agent any
 
+    environment {
+        NODEJS_HOME = tool name: 'NodeJS 14' // Ensure you have NodeJS installed in Jenkins
+        PATH = "${NODEJS_HOME}/bin:${env.PATH}"
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/Harsha072/fullstack-ecommerce/tree/main/frontend/angular-ecommerce'
+                // Checkout the repository
+                git 'https://github.com/Harsha072/fullstack-ecommerce.git'
             }
         }
-
-        stage('Build') {
+        
+        stage('Install Dependencies') {
             steps {
-                echo 'Installing dependencies...'
-                sh 'npm install'
+                dir('frontend') {
+                    // Install Node.js dependencies
+                    bat 'npm install'
+                }
             }
         }
-
-        stage('Test') {
+        
+        stage('Run Tests') {
             steps {
-                echo 'Running tests...'
-                sh 'npm test -- --watch=false'
+                dir('frontend') {
+                    // Run unit tests
+                    bat 'npm test'
+                }
             }
+        }
+    }
+    
+    post {
+        success {
+            echo 'Tests completed successfully!'
+        }
+        failure {
+            echo 'Tests failed.'
         }
     }
 }
