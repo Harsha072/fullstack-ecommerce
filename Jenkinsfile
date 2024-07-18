@@ -1,6 +1,11 @@
 pipeline {
     agent any
-    
+
+    environment {
+        NODEJS_HOME = tool name: 'NodeJS 14' // Ensure you have NodeJS installed in Jenkins
+        PATH = "${NODEJS_HOME}/bin:${env.PATH}"
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -9,41 +14,31 @@ pipeline {
             }
         }
         
-        stage('Build') {
+        stage('Install Dependencies') {
             steps {
-                // Print a message to indicate the build stage
-                echo 'Building the project...'
-                
-                // Example build command
-                bat 'echo Running build command...'
+                dir('frontend') {
+                    // Install Node.js dependencies
+                    bat 'npm install'
+                }
             }
         }
         
-        stage('Test') {
+        stage('Run Tests') {
             steps {
-                // Print a message to indicate the test stage
-                echo 'Running tests...'
-                
-                // Example test command
-                bat 'echo Running test command...'
-            }
-        }
-        
-        stage('Deploy') {
-            steps {
-                // Print a message to indicate the deploy stage
-                echo 'Deploying the project...'
-                
-                // Example deploy command
-                bat 'echo Running deploy command...'
+                dir('frontend') {
+                    // Run unit tests
+                    bat 'npm test'
+                }
             }
         }
     }
     
     post {
-        always {
-            // Print a message to indicate the pipeline completion
-            echo 'Pipeline completed....'
+        success {
+            echo 'Tests completed successfully!'
+        }
+        failure {
+            echo 'Tests failed.'
         }
     }
 }
