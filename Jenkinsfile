@@ -4,9 +4,9 @@ pipeline {
         stage('Print Environment') {
             steps {
                 script {
-                    bat 'printenv'
-                    bat 'node -v'
-                    bat 'npm -v'
+                    bat 'set' // Prints all environment variables
+                    bat 'node -v' // Prints Node.js version
+                    bat 'npm -v' // Prints npm version
                 }
             }
         }
