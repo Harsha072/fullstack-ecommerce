@@ -33,7 +33,7 @@ pipeline {
         }
         failure {
             bat 'echo Tests failed.'
-            bat 'timeout /t 10' // Adding a delay to see the logs before terminating
+           
         }
     }
 }
