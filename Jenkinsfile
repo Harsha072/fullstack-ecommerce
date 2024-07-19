@@ -1,15 +1,41 @@
 pipeline {
     agent any
+
+
+
     stages {
-        stage('Print Environment') {
+        stage('Checkout') {
             steps {
-                script {
-                    bat 'set' // Prints all environment variables
-                    bat 'node -v' // Prints Node.js version
-                    bat 'npm -v' // Prints npm version
+                // Checkout the repository
+                git 'https://github.com/Harsha072/fullstack-ecommerce.git'
+            }
+        }
+        
+        stage('Install Dependencies') {
+            steps {
+                dir('frontend/angular-ecommerce') {
+                    // Install Node.js dependencies
+                    bat 'npm install'
                 }
             }
         }
-        // other stages
+        
+        stage('Run Tests') {
+            steps {
+                dir('frontend/angular-ecommerce') {
+                    // Run unit tests
+                    bat 'npm test'
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo 'Tests completed successfully!'
+        }
+        failure {
+            echo 'Tests failed.'
+        }
     }
 }
