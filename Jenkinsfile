@@ -1,10 +1,10 @@
+Copy code
 pipeline {
     agent any
 
     stages {
         stage('Checkout') {
             steps {
-                // Print a message to indicate the checkout stage
                 bat 'echo Checking out the code'
             }
         }
@@ -12,7 +12,6 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 dir('frontend/angular-ecommerce') {
-                    // Install Node.js dependencies
                     bat 'echo Installing Node.js dependencies...'
                     bat 'npm install'
                 }
@@ -20,9 +19,8 @@ pipeline {
         }
         
         stage('Run Tests') {
-           steps {
+            steps {
                 dir('frontend/angular-ecommerce') {
-                    // Run unit tests
                     bat 'echo Running tests...'
                     bat 'npm test'
                 }
@@ -32,12 +30,11 @@ pipeline {
     
     post {
         success {
-            // Print a success message
             bat 'echo Tests completed successfully!'
         }
         failure {
-            // Print a failure message
             bat 'echo Tests failed.'
+            bat 'timeout /t 10' // Adding a delay to see the logs before terminating
         }
     }
 }
