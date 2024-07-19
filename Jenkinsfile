@@ -4,9 +4,9 @@ pipeline {
         stage('Print Environment') {
             steps {
                 script {
-                    sh 'printenv'
-                    sh 'node -v'
-                    sh 'npm -v'
+                    bat 'printenv'
+                    bat 'node -v'
+                    bat 'npm -v'
                 }
             }
         }
