@@ -8,7 +8,7 @@ pipeline {
             }
         }
         
-        stage('Install Dependencies') {
+        stage('Install Dependencies- Angular') {
             steps {
                 dir('frontend/angular-ecommerce') {
                     bat 'echo Installing Node.js dependencies...'
@@ -17,11 +17,29 @@ pipeline {
             }
         }
         
-        stage('Run Tests') {
+        stage('Run Tests- Angular') {
             steps {
                 dir('frontend/angular-ecommerce') {
                     bat 'echo Running tests...'
                     bat 'npm run test:ci'
+                }
+            }
+        }
+    }
+      stage('Install Dependencies- Spring boot') {
+            steps {
+                dir('backend/spring-boot-ecommerce') {
+                    bat 'echo Installing Node.js dependencies...'
+                     bat  'mvn clean install'
+                }
+            }
+        }
+        
+        stage('Run Tests- Spring-boot') {
+            steps {
+                dir('backend/spring-boot-ecommerce') {
+                    bat 'echo Running tests...'
+                     bat 'mvn test'
                 }
             }
         }
