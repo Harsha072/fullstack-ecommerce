@@ -13,19 +13,19 @@ pipeline {
         
         stage('Install Dependencies') {
             steps {
-                dir('frontend') {
+               
                     // Install Node.js dependencies
                     bat 'npm install'
-                }
+                
             }
         }
         
         stage('Run Tests') {
             steps {
-                dir('frontend') {
+              
                     // Run unit tests
                     bat 'npm test'
-                }
+                
             }
         }
     }
