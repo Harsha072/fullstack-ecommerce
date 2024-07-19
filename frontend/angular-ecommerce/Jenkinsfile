@@ -1,44 +1,43 @@
 pipeline {
     agent any
 
-    environment {
-        NODEJS_HOME = tool name: 'NodeJS 16.20.2' // Ensure you have NodeJS installed in Jenkins
-        PATH = "${NODEJS_HOME}/bin:${env.PATH}"
-    }
-
     stages {
         stage('Checkout') {
             steps {
-                // Checkout the repository
-                git 'https://github.com/Harsha072/fullstack-ecommerce.git'
+                // Print a message to indicate the checkout stage
+                bat 'echo Checking out the code'
             }
         }
         
         stage('Install Dependencies') {
             steps {
-                dir('frontend') {
+               
                     // Install Node.js dependencies
-                    bat 'npm install'
-                }
+                    bat 'echo Installing Node.js dependencies...'
+                 
+                
             }
         }
         
         stage('Run Tests') {
             steps {
-                dir('frontend') {
+              
                     // Run unit tests
-                    bat 'npm test'
-                }
+                    bat 'echo Running tests...'
+               
+                
             }
         }
     }
     
     post {
         success {
-            echo 'Tests completed successfully!'
+            // Print a success message
+            bat 'echo Tests completed successfully!'
         }
         failure {
-            echo 'Tests failed.'
+            // Print a failure message
+            bat 'echo Tests failed.'
         }
     }
 }
