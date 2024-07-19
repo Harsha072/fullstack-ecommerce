@@ -21,7 +21,7 @@ pipeline {
             steps {
                 dir('frontend/angular-ecommerce') {
                     bat 'echo Running tests...'
-                    bat 'npm test'
+                    bat 'npm run test:ci'
                 }
             }
         }
