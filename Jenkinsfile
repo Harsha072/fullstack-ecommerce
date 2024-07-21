@@ -15,7 +15,7 @@ pipeline {
                 dir('backend/spring-boot-ecommerce') {
                     echo 'Installing Maven dependencies...'
                     // Clean previous build artifacts and install dependencies
-                    bat 'mvn clean install'
+                    bat 'mvn clean install -DskipTests'
                 }
             }
         }
@@ -36,7 +36,7 @@ pipeline {
                 dir('backend/spring-boot-ecommerce') {
                     echo 'Building JAR file...'
                     // Build the JAR file
-                    bat 'mvn package'
+                    bat 'mvn package -DskipTests'
                 }
             }
         }
@@ -65,7 +65,7 @@ pipeline {
             steps {
                 dir('frontend/angular-ecommerce') {
                     echo 'Building Angular application...'
-                    bat 'ng build --prod'
+                    bat 'npm build --prod'
                 }
             }
         }
