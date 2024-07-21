@@ -1,1 +1,13 @@
-
+version: "3.7"
+services:
+  mysqldb:
+    image: mysql:8.0 # or your custom image if you created one
+    environment:
+      MYSQL_DATABASE: full-stack-ecommerce
+      MYSQL_USER: root
+      MYSQL_PASSWORD: reset@123
+      MYSQL_ROOT_PASSWORD: reset@123
+    volumes:
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
