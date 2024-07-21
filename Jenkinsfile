@@ -5,7 +5,8 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Checking out the code'
-                
+                // Checkout code from the version control system
+               
             }
         }
 
@@ -13,6 +14,7 @@ pipeline {
             steps {
                 dir('backend/spring-boot-ecommerce') {
                     echo 'Installing Maven dependencies...'
+                    // Clean previous build artifacts and install dependencies
                     bat 'mvn clean install'
                 }
             }
@@ -25,6 +27,16 @@ pipeline {
                     catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                         bat 'mvn test'
                     }
+                }
+            }
+        }
+
+        stage('Build JAR - Maven') {
+            steps {
+                dir('backend/spring-boot-ecommerce') {
+                    echo 'Building JAR file...'
+                    // Build the JAR file
+                    bat 'mvn package'
                 }
             }
         }
@@ -48,14 +60,23 @@ pipeline {
                 }
             }
         }
+
+        stage('Build Angular') {
+            steps {
+                dir('frontend/angular-ecommerce') {
+                    echo 'Building Angular application...'
+                    bat 'ng build --prod'
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo 'All tests completed successfully!'
+            echo 'All tests and builds completed successfully!'
         }
         failure {
-            echo 'Some tests failed.'
+            echo 'Some tests or builds failed.'
         }
     }
 }
