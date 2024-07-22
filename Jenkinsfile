@@ -9,6 +9,37 @@ pipeline {
                
             }
         }
+         stage('Install Dependencies - Angular') {
+            steps {
+                dir('frontend/angular-ecommerce') {
+                    echo 'Installing Node.js dependencies...'
+                    bat 'npm install'
+                }
+            }
+        }
+
+        stage('Run Tests - Angular') {
+            steps {
+                dir('frontend/angular-ecommerce') {
+                    echo 'Running Angular tests...'
+                    script {
+                        def testResult = bat(script: 'npm run test:ci', returnStatus: true)
+                        if (testResult != 0) {
+                            error 'Angular tests failed. Stopping the pipeline.'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Build Angular') {
+            steps {
+                dir('frontend/angular-ecommerce') {
+                    echo 'Building Angular application...'
+                    bat 'npm run build'
+                }
+            }
+        }
 
         stage('Install Dependencies - Maven') {
             steps {
@@ -44,37 +75,7 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies - Angular') {
-            steps {
-                dir('frontend/angular-ecommerce') {
-                    echo 'Installing Node.js dependencies...'
-                    bat 'npm install'
-                }
-            }
-        }
-
-        stage('Run Tests - Angular') {
-            steps {
-                dir('frontend/angular-ecommerce') {
-                    echo 'Running Angular tests...'
-                    script {
-                        def testResult = bat(script: 'npm run test:ci', returnStatus: true)
-                        if (testResult != 0) {
-                            error 'Angular tests failed. Stopping the pipeline.'
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Build Angular') {
-            steps {
-                dir('frontend/angular-ecommerce') {
-                    echo 'Building Angular application...'
-                    bat 'npm run build'
-                }
-            }
-        }
+       
     }
 
     post {
