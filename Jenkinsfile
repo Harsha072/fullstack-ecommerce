@@ -6,7 +6,8 @@ pipeline {
             steps {
                 echo 'Checking out the code'
                 // Checkout code from the version control system
-               
+                // For example, using Git
+                git 'https://your-repository-url'
             }
         }
 
@@ -24,8 +25,11 @@ pipeline {
             steps {
                 dir('backend/spring-boot-ecommerce') {
                     echo 'Running Maven tests...'
-                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                        bat 'mvn test'
+                    script {
+                        def testResult = bat(script: 'mvn test', returnStatus: true)
+                        if (testResult != 0) {
+                            error 'Maven tests failed. Stopping the pipeline.'
+                        }
                     }
                 }
             }
@@ -54,8 +58,11 @@ pipeline {
             steps {
                 dir('frontend/angular-ecommerce') {
                     echo 'Running Angular tests...'
-                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                        bat 'npm run test:ci'
+                    script {
+                        def testResult = bat(script: 'npm run test:ci', returnStatus: true)
+                        if (testResult != 0) {
+                            error 'Angular tests failed. Stopping the pipeline.'
+                        }
                     }
                 }
             }
