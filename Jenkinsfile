@@ -65,7 +65,7 @@ pipeline {
             steps {
                 dir('frontend/angular-ecommerce') {
                     echo 'Building Angular application...'
-                    bat 'npm build --prod'
+                    bat 'npm run build --prod'
                 }
             }
         }
