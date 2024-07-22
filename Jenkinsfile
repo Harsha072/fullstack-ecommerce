@@ -10,39 +10,39 @@ pipeline {
             }
         }
 
-        // stage('Install Dependencies - Maven') {
-        //     steps {
-        //         dir('backend/spring-boot-ecommerce') {
-        //             echo 'Installing Maven dependencies...'
-        //             // Clean previous build artifacts and install dependencies
-        //             bat 'mvn clean install -DskipTests'
-        //         }
-        //     }
-        // }
+        stage('Install Dependencies - Maven') {
+            steps {
+                dir('backend/spring-boot-ecommerce') {
+                    echo 'Installing Maven dependencies...'
+                    // Clean previous build artifacts and install dependencies
+                    bat 'mvn clean install -DskipTests'
+                }
+            }
+        }
 
-        // stage('Run Tests - Maven') {
-        //     steps {
-        //         dir('backend/spring-boot-ecommerce') {
-        //             echo 'Running Maven tests...'
-        //             script {
-        //                 def testResult = bat(script: 'mvn test', returnStatus: true)
-        //                 if (testResult != 0) {
-        //                     error 'Maven tests failed. Stopping the pipeline.'
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Run Tests - Maven') {
+            steps {
+                dir('backend/spring-boot-ecommerce') {
+                    echo 'Running Maven tests...'
+                    script {
+                        def testResult = bat(script: 'mvn test', returnStatus: true)
+                        if (testResult != 0) {
+                            error 'Maven tests failed. Stopping the pipeline.'
+                        }
+                    }
+                }
+            }
+        }
 
-        // stage('Build JAR - Maven') {
-        //     steps {
-        //         dir('backend/spring-boot-ecommerce') {
-        //             echo 'Building JAR file...'
-        //             // Build the JAR file
-        //             bat 'mvn package -DskipTests'
-        //         }
-        //     }
-        // }
+        stage('Build JAR - Maven') {
+            steps {
+                dir('backend/spring-boot-ecommerce') {
+                    echo 'Building JAR file...'
+                    // Build the JAR file
+                    bat 'mvn package -DskipTests'
+                }
+            }
+        }
 
         stage('Install Dependencies - Angular') {
             steps {
