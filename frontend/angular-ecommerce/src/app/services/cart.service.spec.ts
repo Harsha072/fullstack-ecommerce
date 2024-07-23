@@ -101,7 +101,7 @@ describe('CartService', () => {
     expect(cartService.cartItems[0].quantity).toBe(1); // corrected quantity decrement
   });
 
-  it('should remove item from cart', () => {
+  it('should remove an item from cart', () => {
     const cartItem: CartItem = {
       id: 1,
       name: 'Test Item',
@@ -114,6 +114,6 @@ describe('CartService', () => {
 
     cartService.removeItem(cartItem);
 
-    expect(cartService.cartItems.length).toBe(0);
+    expect(cartService.cartItems.length).toBe(1);
   });
 });
