@@ -6,7 +6,7 @@ pipeline {
             steps {
                 echo 'Checking out the code'
                 // Checkout code from the version control system
-                git https://github.com/Harsha072/fullstack-ecommerce.git
+                git branch: 'main', url: ' https://github.com/Harsha072/fullstack-ecommerce.git'
                
             }
         }
