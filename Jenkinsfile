@@ -9,6 +9,17 @@ pipeline {
                 git branch: 'main', url: ' https://github.com/Harsha072/fullstack-ecommerce.git'
             }
         }
+        stage('Verify Docker Setup') {
+            steps {
+                echo 'Verifying Docker setup...'
+                script {
+                    def dockerCheck = bat(script: 'docker --version', returnStatus: true)
+                    if (dockerCheck != 0) {
+                        error 'Docker command failed. Ensure Docker is installed and Jenkins user has access to it.'
+                    }
+                }
+            }
+        }
       
         stage('Install Dependencies - Angular') {
             steps {
@@ -79,10 +90,10 @@ pipeline {
 
     post {
         success {
-            echo 'All tests and builds completed successfully!'
+            echo 'All tests and builds completed successfully and check for docker!'
         }
         failure {
-            echo 'Some tests or builds failed.'
+            echo 'Some tests or builds failed and docker not installed properly.'
         }
     }
 }
