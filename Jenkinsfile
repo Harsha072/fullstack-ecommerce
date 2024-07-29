@@ -102,7 +102,7 @@ pipeline {
                 }
             }
         }
-    }
+    
 
     post {
         success {
