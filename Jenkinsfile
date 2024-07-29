@@ -10,17 +10,7 @@ pipeline {
                
             }
         }
-        stage('Verify Docker Setup') {
-            steps {
-                echo 'Verifying Docker setup...'
-                script {
-                    def dockerCheck = bat(script: 'docker --version', returnStatus: true)
-                    if (dockerCheck != 0) {
-                        error 'Docker command failed. Ensure Docker is installed and Jenkins user has access to it.'
-                    }
-                }
-            }
-        }
+        
          stage('Install Dependencies - Angular') {
             steps {
                 dir('frontend/angular-ecommerce') {
