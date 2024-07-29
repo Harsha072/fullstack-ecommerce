@@ -114,6 +114,6 @@ describe('CartService', () => {
 
     cartService.removeItem(cartItem);
 
-    expect(cartService.cartItems.length).toBe(1);
+    expect(cartService.cartItems.length).toBe(0);
   });
 });
