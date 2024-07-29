@@ -5,8 +5,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Checking out the code'
-                // Checkout code from the version control system
-                git branch: 'main', url: ' https://github.com/Harsha072/fullstack-ecommerce.git'
+                git branch: 'main', url: 'https://github.com/Harsha072/fullstack-ecommerce.git'
             }
         }
         stage('Verify Docker Setup') {
@@ -57,7 +56,6 @@ pipeline {
             steps {
                 dir('backend/spring-boot-ecommerce') {
                     echo 'Installing Maven dependencies...'
-                    // Clean previous build artifacts and install dependencies
                     bat 'mvn clean install -DskipTests'
                 }
             }
@@ -81,13 +79,12 @@ pipeline {
             steps {
                 dir('backend/spring-boot-ecommerce') {
                     echo 'Building JAR file...'
-                    // Build the JAR file
                     bat 'mvn package -DskipTests'
                 }
             }
         }
-    }
-    stage('Build Docker Image') {
+
+        stage('Build Docker Image') {
             steps {
                 dir('backend/spring-boot-ecommerce') {
                     echo 'Building Docker image...'
@@ -102,14 +99,14 @@ pipeline {
                 }
             }
         }
-    
+    }
 
     post {
         success {
-            echo 'All tests and builds completed successfully and check for docker!'
+            echo 'All tests and builds completed successfully!'
         }
         failure {
-            echo 'Some tests or builds failed and docker not installed properly.'
+            echo 'Some tests or builds failed.'
         }
     }
 }
