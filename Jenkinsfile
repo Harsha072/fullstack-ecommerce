@@ -87,6 +87,22 @@ pipeline {
             }
         }
     }
+    stage('Build Docker Image') {
+            steps {
+                dir('backend/spring-boot-ecommerce') {
+                    echo 'Building Docker image...'
+                    script {
+                        def imageName = 'spring-boot-ecommerce'
+                        def dockerBuild = bat(script: "docker build -t ${imageName}:latest .", returnStatus: true)
+                        if (dockerBuild != 0) {
+                            error 'Docker image build failed.'
+                        }
+                        echo 'Docker image built successfully.'
+                    }
+                }
+            }
+        }
+    }
 
     post {
         success {
