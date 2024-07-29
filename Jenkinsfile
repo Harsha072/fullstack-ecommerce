@@ -7,9 +7,9 @@ pipeline {
                 echo 'Checking out the code'
                 // Checkout code from the version control system
                 git branch: 'main', url: ' https://github.com/Harsha072/fullstack-ecommerce.git'
+               
             }
         }
-
         stage('Verify Docker Setup') {
             steps {
                 echo 'Verifying Docker setup...'
@@ -21,8 +21,7 @@ pipeline {
                 }
             }
         }
-
-        stage('Install Dependencies - Angular') {
+         stage('Install Dependencies - Angular') {
             steps {
                 dir('frontend/angular-ecommerce') {
                     echo 'Installing Node.js dependencies...'
@@ -87,14 +86,16 @@ pipeline {
                 }
             }
         }
+
+       
     }
 
     post {
         success {
-            echo 'All tests and builds completed successfully and checked for docker!'
+            echo 'All tests and builds completed successfully!'
         }
         failure {
-            echo 'Some tests or builds failed and docker did not run.'
+            echo 'Some tests or builds failed.'
         }
     }
 }
