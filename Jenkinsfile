@@ -19,7 +19,6 @@ pipeline {
                 }
             }
         }
-      
         stage('Install Dependencies - Angular') {
             steps {
                 dir('frontend/angular-ecommerce') {
@@ -28,7 +27,6 @@ pipeline {
                 }
             }
         }
-
         stage('Run Tests - Angular') {
             steps {
                 dir('frontend/angular-ecommerce') {
@@ -42,7 +40,6 @@ pipeline {
                 }
             }
         }
-
         stage('Build Angular') {
             steps {
                 dir('frontend/angular-ecommerce') {
@@ -51,7 +48,6 @@ pipeline {
                 }
             }
         }
-
         stage('Install Dependencies - Maven') {
             steps {
                 dir('backend/spring-boot-ecommerce') {
@@ -60,7 +56,6 @@ pipeline {
                 }
             }
         }
-
         stage('Run Tests - Maven') {
             steps {
                 dir('backend/spring-boot-ecommerce') {
@@ -74,7 +69,6 @@ pipeline {
                 }
             }
         }
-
         stage('Build JAR - Maven') {
             steps {
                 dir('backend/spring-boot-ecommerce') {
@@ -83,18 +77,32 @@ pipeline {
                 }
             }
         }
-
-        stage('Build Docker Image') {
+        stage('Build Docker Image - Spring Boot') {
             steps {
                 dir('backend/spring-boot-ecommerce') {
-                    echo 'Building Docker image...'
+                    echo 'Building Docker image for Spring Boot...'
                     script {
                         def imageName = 'spring-boot-ecommerce'
                         def dockerBuild = bat(script: "docker build -t ${imageName}:latest .", returnStatus: true)
                         if (dockerBuild != 0) {
-                            error 'Docker image build failed.'
+                            error 'Docker image build failed for Spring Boot.'
                         }
-                        echo 'Docker image built successfully.'
+                        echo 'Docker image for Spring Boot built successfully.'
+                    }
+                }
+            }
+        }
+        stage('Build Docker Image - Angular') {
+            steps {
+                dir('frontend/angular-ecommerce') {
+                    echo 'Building Docker image for Angular...'
+                    script {
+                        def imageName = 'angular-ecommerce'
+                        def dockerBuild = bat(script: "docker build -t ${imageName}:latest .", returnStatus: true)
+                        if (dockerBuild != 0) {
+                            error 'Docker image build failed for Angular.'
+                        }
+                        echo 'Docker image for Angular built successfully.'
                     }
                 }
             }
