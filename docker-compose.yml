@@ -1,4 +1,4 @@
-version: "3.7"
+
 services:
   mysqldb:
     image: mysql:8.0
@@ -12,7 +12,15 @@ services:
     networks:
       - springapimysql-net
 
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
   api_service:
+    image: harshaswamy789475/spring-boot-ecommerce
+
     build: ./backend/spring-boot-ecommerce
     restart: always
     environment:
@@ -23,7 +31,24 @@ services:
     ports:
       - "8090:8080"
     depends_on:
-      - mysqldb
+
+      mysqldb:
+        condition: service_healthy
+    networks:
+      - springapimysql-net
+
+  angular_service:
+    image: harshaswamy789475/angular-ecommerce
+    build: ./frontend/angular-ecommerce
+    restart: always
+    ports:
+      - "4200:80"
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+      api_service:
+        condition: service_started
+
     networks:
       - springapimysql-net
 
