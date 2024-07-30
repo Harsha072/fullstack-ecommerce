@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deploys an ECS cluster and service with an ECR repository
+
+Resources:
+  # ECR Repository for Docker Images
+  ECRRepository:
+    Type: 'AWS::ECR::Repository'
+    Properties: 
+      RepositoryName: 'full-stack-ecommerce'
+  
+  # ECS Cluster
+  ECSCluster:
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: 'my-ecs-cluster'
+  
+  # ECS Task Definition
+  ECSTaskDefinition:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: 'my-task-definition'
+      NetworkMode: 'bridge'
+      ContainerDefinitions:
+        - Name: 'api_service'
+          Image: !Sub '${ECRRepository.RepositoryUri}:latest'
+          Essential: true
+          Memory: 512
+          Cpu: 256
+          PortMappings:
+            - ContainerPort: 8080
+              HostPort: 8090
+          Environment:
+            - Name: MYSQL_HOST
+              Value: 'mysqldb'
+            - Name: MYSQL_PORT
+              Value: '3306'
+            - Name: MYSQL_USER
+              Value: 'root'
+            - Name: MYSQL_PASSWORD
+              Value: 'reset@123'
+  
+  # ECS Service
+  ECSService:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      Cluster: !Ref ECSCluster
+      DesiredCount: 1
+      TaskDefinition: !Ref ECSTaskDefinition
+      LaunchType: 'FARGATE'  # Use 'FARGATE' if you are using the Fargate launch type
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets:
+            - subnet-xxxxxxxx
+          SecurityGroups:
+            - sg-xxxxxxxx
+          AssignPublicIp: 'ENABLED'
+  
+  # IAM Role for ECS Task Execution
+  ECSTaskExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: 'ecsTaskExecutionRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'ecs-tasks.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'ecsTaskExecutionPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 'ecr:GetAuthorizationToken'
+                  - 'ecr:BatchCheckLayerAvailability'
+                  - 'ecr:GetDownloadUrlForLayer'
+                  - 'ecr:BatchGetImage'
+                Resource: '*'
+              - Effect: 'Allow'
+                Action:
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: '*'
+
+Outputs:
+  ECRRepositoryUri:
+    Description: 'URI of the ECR repository'
+    Value: !Sub '${ECRRepository.RepositoryUri}'
+  ECSClusterName:
+    Description: 'Name of the ECS cluster'
+    Value: !Ref ECSCluster
