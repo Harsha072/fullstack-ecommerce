@@ -124,7 +124,9 @@ pipeline {
                     }
                 }
             }
-            stage('Deploy to angualr') {
+            
+        }
+        stage('Deploy to angualr') {
             steps {
                 script {
                     docker.withRegistry('https://448491001185.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce', 'ecr:us-east-1:aws-credentials') {
@@ -139,7 +141,6 @@ pipeline {
                     }
                 }
             }
-        }
         }
     }
 
