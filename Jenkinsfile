@@ -3,7 +3,8 @@ pipeline {
     environment {
         AWS_DEFAULT_REGION = 'us-east-1'
         CLUSTER_NAME = 'my-fargate-cluster'
-        SERVICE_NAME = 'my-service'
+        SERVICE_NAME_SPRING = 'spring-boot-service' // Ensure this is the actual service name
+        SERVICE_NAME_ANGULAR = 'angular-ecommerce-service' // Ensure this is the actual service name
         TASK_FAMILY_SPRING = 'spring-boot-ecommerce-task-family'
         TASK_FAMILY_ANGULAR = 'angular-ecommerce-task-family'
     }
@@ -113,46 +114,32 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to ECR') {
+        stage('Deploy to ECR and ECS Fargate') {
             steps {
-                echo 'Authenticating Docker to AWS ECR and pushing images...'
+                echo 'Authenticating Docker to AWS ECR, pushing images, and deploying to ECS Fargate...'
                 script {
-                    // Use the credentials configured in Jenkins
                     withCredentials([[
                         $class: 'AmazonWebServicesCredentialsBinding', 
                         credentialsId: 'aws-credentials'
                     ]]) {
-                        // Set AWS environment variables from the injected credentials
-                        env.AWS_DEFAULT_REGION = 'us-east-1' // Adjust the region as needed
+                        bat """
+                        set AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID%
+                        set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
+                        set AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
 
                         // Login to ECR
-                        def ecrLogin = bat(script: 'aws ecr get-login-password --region %AWS_DEFAULT_REGION% | docker login --username AWS --password-stdin 448491001185.dkr.ecr.us-east-1.amazonaws.com', returnStatus: true)
-                        if (ecrLogin != 0) {
-                            error 'Failed to login to AWS ECR. Please check your credentials and region.'
-                        }
-                        
+                        aws ecr get-login-password --region %AWS_DEFAULT_REGION% | docker login --username AWS --password-stdin 448491001185.dkr.ecr.us-east-1.amazonaws.com
+
                         // Tag and push Spring Boot image
-                        def springBootTag = bat(script: 'docker tag spring-boot-ecommerce:latest 448491001185.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest', returnStatus: true)
-                        if (springBootTag != 0) {
-                            error 'Failed to tag Docker image for Spring Boot.'
-                        }
-                        def springBootPush = bat(script: 'docker push 448491001185.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest', returnStatus: true)
-                        if (springBootPush != 0) {
-                            error 'Failed to push Docker image for Spring Boot.'
-                        }
+                        docker tag spring-boot-ecommerce:latest 448491001185.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest
+                        docker push 448491001185.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest
 
                         // Tag and push Angular image
-                        def angularTag = bat(script: 'docker tag angular-ecommerce:latest 448491001185.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest', returnStatus: true)
-                        if (angularTag != 0) {
-                            error 'Failed to tag Docker image for Angular.'
-                        }
-                        def angularPush = bat(script: 'docker push 448491001185.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest', returnStatus: true)
-                        if (angularPush != 0) {
-                            error 'Failed to push Docker image for Angular.'
-                        }
-                        
-                        echo 'Docker images pushed to ECR successfully.'
-                           // Register Spring Boot task definition
+                        docker tag angular-ecommerce:latest 448491001185.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest
+                        docker push 448491001185.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest
+                        """
+
+                        // Register Spring Boot task definition
                         def springTaskDefinition = bat(script: '''
                             aws ecs register-task-definition ^
                               --family ${TASK_FAMILY_SPRING} ^
@@ -160,7 +147,6 @@ pipeline {
                               --requires-compatibilities FARGATE ^
                               --cpu 1024 ^
                               --memory 3072 ^
-                            
                               --container-definitions "[
                                   {
                                     \\"name\\": \\"spring-boot-ecommerce\\",
@@ -191,7 +177,6 @@ pipeline {
                               --requires-compatibilities FARGATE ^
                               --cpu 1024 ^
                               --memory 3072 ^
-                    
                               --container-definitions "[
                                   {
                                     \\"name\\": \\"angular-ecommerce\\",
@@ -212,7 +197,7 @@ pipeline {
                         def updateSpringService = bat(script: '''
                             aws ecs update-service ^
                               --cluster ${CLUSTER_NAME} ^
-                              --service ${SERVICE_NAME} ^
+                              --service ${SERVICE_NAME_SPRING} ^
                               --task-definition %springTaskDefinition%
                         ''', returnStatus: true)
                         if (updateSpringService != 0) {
@@ -223,7 +208,7 @@ pipeline {
                         def updateAngularService = bat(script: '''
                             aws ecs update-service ^
                               --cluster ${CLUSTER_NAME} ^
-                              --service ${SERVICE_NAME} ^
+                              --service ${SERVICE_NAME_ANGULAR} ^
                               --task-definition %angularTaskDefinition%
                         ''', returnStatus: true)
                         if (updateAngularService != 0) {
@@ -231,7 +216,7 @@ pipeline {
                         }
 
                         echo 'Docker images pushed to ECR and ECS services updated successfully.'
-                    
+                    }
                 }
             }
         }
