@@ -110,7 +110,7 @@ pipeline {
         stage('Deploy to spring-boot-ecommerce') {
             steps {
                 script {
-                    docker.withRegistry('https://448491001185.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce', 'aws-credentials') {
+                    docker.withRegistry('https://448491001185.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce', 'AWS-credentials') {
                         // Define the images
                         def springBootImage = "spring-boot-ecommerce"
                        
@@ -129,7 +129,7 @@ pipeline {
         stage('Deploy to angualr') {
             steps {
                 script {
-                    docker.withRegistry('https://448491001185.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce', 'aws-credentials') {
+                    docker.withRegistry('https://448491001185.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce', 'AWS-credentials') {
                         // Define the images
         
                         def angularImage = "angular-ecommerce"
