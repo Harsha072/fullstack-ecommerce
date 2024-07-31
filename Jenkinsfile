@@ -1,6 +1,14 @@
 pipeline {
     agent any
 
+    environment {
+        AWS_DEFAULT_REGION = 'us-east-1'
+        CLUSTER_NAME = 'my-fargate-cluster'
+        SERVICE_NAME = 'my-service'
+        TASK_FAMILY = 'my-task-family'
+       
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -8,6 +16,7 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Harsha072/fullstack-ecommerce.git'
             }
         }
+
         stage('Verify Docker Setup') {
             steps {
                 echo 'Verifying Docker setup...'
@@ -19,6 +28,7 @@ pipeline {
                 }
             }
         }
+
         stage('Install Dependencies - Angular') {
             steps {
                 dir('frontend/angular-ecommerce') {
@@ -27,6 +37,7 @@ pipeline {
                 }
             }
         }
+
         stage('Run Tests - Angular') {
             steps {
                 dir('frontend/angular-ecommerce') {
@@ -40,6 +51,7 @@ pipeline {
                 }
             }
         }
+
         stage('Build Angular') {
             steps {
                 dir('frontend/angular-ecommerce') {
@@ -48,6 +60,7 @@ pipeline {
                 }
             }
         }
+
         stage('Install Dependencies - Maven') {
             steps {
                 dir('backend/spring-boot-ecommerce') {
@@ -56,6 +69,7 @@ pipeline {
                 }
             }
         }
+
         stage('Run Tests - Maven') {
             steps {
                 dir('backend/spring-boot-ecommerce') {
@@ -69,6 +83,7 @@ pipeline {
                 }
             }
         }
+
         stage('Build JAR - Maven') {
             steps {
                 dir('backend/spring-boot-ecommerce') {
@@ -77,6 +92,7 @@ pipeline {
                 }
             }
         }
+
         stage('Build Docker Image - Spring Boot') {
             steps {
                 dir('backend/spring-boot-ecommerce') {
@@ -92,6 +108,7 @@ pipeline {
                 }
             }
         }
+
         stage('Build Docker Image - Angular') {
             steps {
                 dir('frontend/angular-ecommerce') {
@@ -107,45 +124,71 @@ pipeline {
                 }
             }
         }
+
         stage('Deploy to ECR') {
             steps {
                 echo 'Authenticating Docker to AWS ECR and pushing images...'
                 script {
-                    // Use the credentials configured in Jenkins
-                    withCredentials([[
-                        $class: 'AmazonWebServicesCredentialsBinding', 
-                        credentialsId: 'aws-credentials'
-                    ]]) {
-                        // Set AWS environment variables from the injected credentials
-                        env.AWS_DEFAULT_REGION = 'us-east-1' // Adjust the region as needed
+                    withCredentials([string(credentialsId: 'aws-credentials', variable: 'AWS_ACCESS_KEY_ID'),
+                                     string(credentialsId: 'aws-credentials', variable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        bat """
+                        set AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID%
+                        set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
+                        set AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
 
-                        // Login to ECR
-                        def ecrLogin = bat(script: 'aws ecr get-login-password --region %AWS_DEFAULT_REGION% | docker login --username AWS --password-stdin 448491001185.dkr.ecr.us-east-1.amazonaws.com', returnStatus: true)
-                        if (ecrLogin != 0) {
-                            error 'Failed to login to AWS ECR. Please check your credentials and region.'
-                        }
-                        
-                        // Tag and push Spring Boot image
-                        def springBootTag = bat(script: 'docker tag spring-boot-ecommerce:latest 448491001185.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest', returnStatus: true)
-                        if (springBootTag != 0) {
-                            error 'Failed to tag Docker image for Spring Boot.'
-                        }
-                        def springBootPush = bat(script: 'docker push 448491001185.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest', returnStatus: true)
-                        if (springBootPush != 0) {
-                            error 'Failed to push Docker image for Spring Boot.'
-                        }
+                        aws ecr get-login-password --region %AWS_DEFAULT_REGION% | docker login --username AWS --password-stdin 448491001185.dkr.ecr.us-east-1.amazonaws.com
+                        docker tag spring-boot-ecommerce:latest 448491001185.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest
+                        docker push 448491001185.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest
+                        docker tag angular-ecommerce:latest 448491001185.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest
+                        docker push 448491001185.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest
+                        """
+                    }
+                }
+            }
+        }
 
-                        // Tag and push Angular image
-                        def angularTag = bat(script: 'docker tag angular-ecommerce:latest 448491001185.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest', returnStatus: true)
-                        if (angularTag != 0) {
-                            error 'Failed to tag Docker image for Angular.'
-                        }
-                        def angularPush = bat(script: 'docker push 448491001185.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest', returnStatus: true)
-                        if (angularPush != 0) {
-                            error 'Failed to push Docker image for Angular.'
-                        }
-                        
-                        echo 'Docker images pushed to ECR successfully.'
+        stage('Deploy to ECS Fargate') {
+            steps {
+                echo 'Updating ECS Fargate service...'
+                script {
+                    withCredentials([string(credentialsId: 'aws-credentials', variable: 'AWS_ACCESS_KEY_ID'),
+                                     string(credentialsId: 'aws-credentials', variable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        bat """
+                        set AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID%
+                        set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
+                        set AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+
+                        set TASK_DEFINITION_ARN=$(aws ecs register-task-definition ^
+                          --family ${TASK_FAMILY} ^
+                          --network-mode awsvpc ^
+                          --requires-compatibilities FARGATE ^
+                          --cpu 256 ^
+                          --memory 512 ^
+                          --execution-role-arn arn:aws:iam::448491001185:role/<ecsTaskExecutionRole> ^
+                          --task-role-arn arn:aws:iam::448491001185:role/<ecsTaskRole> ^
+                          --container-definitions "[
+                              {
+                                \\"name\\": \\"angular-ecommerce\\",
+                                \\"image\\": \\"448491001185.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest\\",
+                                \\"essential\\": true,
+                                \\"portMappings\\": [
+                                    { \\"containerPort\\": 80, \\"protocol\\": \\"tcp\\" }
+                                ]
+                              },
+                              {
+                                \\"name\\": \\"spring-boot-ecommerce\\",
+                                \\"image\\": \\"448491001185.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest\\",
+                                \\"essential\\": true,
+                                \\"portMappings\\": [
+                                    { \\"containerPort\\": 8080, \\"protocol\\": \\"tcp\\" }
+                                ]
+                              }
+                            ]" ^
+                          --query "taskDefinition.taskDefinitionArn" ^
+                          --output text)
+
+                        aws ecs update-service --cluster ${CLUSTER_NAME} --service ${SERVICE_NAME} --task-definition %TASK_DEFINITION_ARN%
+                        """
                     }
                 }
             }
@@ -154,7 +197,7 @@ pipeline {
 
     post {
         success {
-            echo 'All tests, builds, and deployments completed successfully and pushed to AWS ECR!'
+            echo 'All tests, builds, and deployments completed successfully and pushed to AWS ECR and ECS Fargate!'
         }
         failure {
             echo 'Some tests, builds, or deployments failed.'
