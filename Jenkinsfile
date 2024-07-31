@@ -107,22 +107,20 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to ECR') {
+       stage('Deploy to ECR') {
             steps {
                 echo 'Authenticating Docker to AWS ECR and pushing images...'
                 script {
-                    withCredentials([string(credentialsId: 'aws-access-key-id', variable: 'AWS_ACCESS_KEY_ID'),
-                                     string(credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY')]) {
-                        
-                        // Set up AWS CLI
-                        bat '''
-                        aws configure set aws_access_key_id ${AWS_ACCESS_KEY_ID}
-                        aws configure set aws_secret_access_key ${AWS_SECRET_ACCESS_KEY}
-                        aws configure set default.region us-east-1
-                        '''
-                        
+                    // Use the credentials configured in Jenkins
+                    withCredentials([[
+                        $class: 'AmazonWebServicesCredentialsBinding', 
+                        credentialsId: 'aws-credentials'
+                    ]]) {
+                        // Set AWS environment variables from the injected credentials
+                        env.AWS_DEFAULT_REGION = 'us-east-1' // Adjust the region as needed
+
                         // Login to ECR
-                        def ecrLogin = bat(script: 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 448491001185.dkr.ecr.us-east-1.amazonaws.com', returnStatus: true)
+                        def ecrLogin = bat(script: 'aws ecr get-login-password --region %AWS_DEFAULT_REGION% | docker login --username AWS --password-stdin 448491001185.dkr.ecr.us-east-1.amazonaws.com', returnStatus: true)
                         if (ecrLogin != 0) {
                             error 'Failed to login to AWS ECR. Please check your credentials and region.'
                         }
@@ -151,7 +149,6 @@ pipeline {
                     }
                 }
             }
-        }
     }
 
     post {
