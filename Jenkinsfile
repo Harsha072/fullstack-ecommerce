@@ -83,7 +83,7 @@ pipeline {
                     echo 'Building Docker image for Spring Boot...'
                     script {
                         def imageName = 'spring-boot-ecommerce'
-                        def dockerBuild = bat(script: "docker build -t ${imageName}:latest .", returnStatus: true)
+                        def dockerBuild = bat(script: "docker build -t ${imageName}:${env.BUILD_NUMBER} -t ${imageName}:latest .", returnStatus: true)
                         if (dockerBuild != 0) {
                             error 'Docker image build failed for Spring Boot.'
                         }
@@ -98,7 +98,7 @@ pipeline {
                     echo 'Building Docker image for Angular...'
                     script {
                         def imageName = 'angular-ecommerce'
-                        def dockerBuild = bat(script: "docker build -t ${imageName}:latest .", returnStatus: true)
+                        def dockerBuild = bat(script: "docker build -t ${imageName}:${env.BUILD_NUMBER} -t ${imageName}:latest .", returnStatus: true)
                         if (dockerBuild != 0) {
                             error 'Docker image build failed for Angular.'
                         }
@@ -107,14 +107,48 @@ pipeline {
                 }
             }
         }
+        stage('Deploy to spring-boot-ecommerce') {
+            steps {
+                script {
+                    docker.withRegistry('https://448491001185.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce', 'ecr:us-east-1:aws-credentials') {
+                        // Define the images
+                        def springBootImage = "spring-boot-ecommerce"
+                       
+
+                        // Push the Spring Boot image
+                        def springBootApp = docker.image(springBootImage)
+                        springBootApp.push("${env.BUILD_NUMBER}")
+                        springBootApp.push("latest")
+
+                    
+                    }
+                }
+            }
+            stage('Deploy to angualr') {
+            steps {
+                script {
+                    docker.withRegistry('https://448491001185.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce', 'ecr:us-east-1:aws-credentials') {
+                        // Define the images
+        
+                        def angularImage = "angular-ecommerce"
+
+                        // Push the Angular image
+                        def angularApp = docker.image(angularImage)
+                        angularApp.push("${env.BUILD_NUMBER}")
+                        angularApp.push("latest")
+                    }
+                }
+            }
+        }
+        }
     }
 
     post {
         success {
-            echo 'All tests and builds completed successfully!'
+            echo 'All tests, builds, and deployments completed successfully and pushed to aws ecr!'
         }
         failure {
-            echo 'Some tests or builds failed.'
+            echo 'Some tests, builds, or deployments failed.'
         }
     }
 }
