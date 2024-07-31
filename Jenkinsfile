@@ -156,7 +156,7 @@ pipeline {
                         bat """
                         set AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID%
                         set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
-                        set AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+                        set AWS_DEFAULT_REGION='us-east-1'
 
                         set TASK_DEFINITION_ARN=$(aws ecs register-task-definition ^
                           --family ${TASK_FAMILY} ^
