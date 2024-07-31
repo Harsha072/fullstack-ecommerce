@@ -107,7 +107,7 @@ pipeline {
                 }
             }
         }
-       stage('Deploy to ECR') {
+        stage('Deploy to ECR') {
             steps {
                 echo 'Authenticating Docker to AWS ECR and pushing images...'
                 script {
@@ -149,6 +149,7 @@ pipeline {
                     }
                 }
             }
+        }
     }
 
     post {
