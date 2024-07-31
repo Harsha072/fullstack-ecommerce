@@ -6,7 +6,6 @@ pipeline {
         CLUSTER_NAME = 'my-fargate-cluster'
         SERVICE_NAME = 'my-service'
         TASK_FAMILY = 'my-task-family'
-       
     }
 
     stages {
@@ -156,9 +155,9 @@ pipeline {
                         bat """
                         set AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID%
                         set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
-                        set AWS_DEFAULT_REGION='us-east-1'
+                        set AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
 
-                        set TASK_DEFINITION_ARN=$(aws ecs register-task-definition ^
+                        for /f "tokens=*" %%i in ('aws ecs register-task-definition ^
                           --family ${TASK_FAMILY} ^
                           --network-mode awsvpc ^
                           --requires-compatibilities FARGATE ^
@@ -185,9 +184,28 @@ pipeline {
                               }
                             ]" ^
                           --query "taskDefinition.taskDefinitionArn" ^
-                          --output text)
+                          --output text') do set TASK_DEFINITION_ARN=%%i
 
                         aws ecs update-service --cluster ${CLUSTER_NAME} --service ${SERVICE_NAME} --task-definition %TASK_DEFINITION_ARN%
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Check ECS Service Status') {
+            steps {
+                echo 'Checking ECS service status...'
+                script {
+                    withCredentials([string(credentialsId: 'aws-credentials', variable: 'AWS_ACCESS_KEY_ID'),
+                                     string(credentialsId: 'aws-credentials', variable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        bat """
+                        set AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID%
+                        set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
+                        set AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+
+                        aws ecs describe-services --cluster ${CLUSTER_NAME} --services ${SERVICE_NAME} --query "services[0].status" --output text
+                        aws ecs list-tasks --cluster ${CLUSTER_NAME} --service-name ${SERVICE_NAME} --query "taskArns" --output text
                         """
                     }
                 }
