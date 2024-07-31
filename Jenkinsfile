@@ -107,37 +107,47 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to spring-boot-ecommerce') {
+        stage('Deploy to ECR') {
             steps {
+                echo 'Authenticating Docker to AWS ECR and pushing images...'
                 script {
-                    docker.withRegistry('448491001185.dkr.ecr.us-east-1.amazonaws.com', 'aws-credentials') {
-                        // Define the images
-                        def springBootImage = "spring-boot-ecommerce"
-                       
+                    withCredentials([string(credentialsId: 'aws-access-key-id', variable: 'AWS_ACCESS_KEY_ID'),
+                                     string(credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        
+                        // Set up AWS CLI
+                        bat '''
+                        aws configure set aws_access_key_id ${AWS_ACCESS_KEY_ID}
+                        aws configure set aws_secret_access_key ${AWS_SECRET_ACCESS_KEY}
+                        aws configure set default.region us-east-1
+                        '''
+                        
+                        // Login to ECR
+                        def ecrLogin = bat(script: 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 448491001185.dkr.ecr.us-east-1.amazonaws.com', returnStatus: true)
+                        if (ecrLogin != 0) {
+                            error 'Failed to login to AWS ECR. Please check your credentials and region.'
+                        }
+                        
+                        // Tag and push Spring Boot image
+                        def springBootTag = bat(script: 'docker tag spring-boot-ecommerce:latest 448491001185.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest', returnStatus: true)
+                        if (springBootTag != 0) {
+                            error 'Failed to tag Docker image for Spring Boot.'
+                        }
+                        def springBootPush = bat(script: 'docker push 448491001185.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest', returnStatus: true)
+                        if (springBootPush != 0) {
+                            error 'Failed to push Docker image for Spring Boot.'
+                        }
 
-                        // Push the Spring Boot image
-                        def springBootApp = docker.image(springBootImage)
-                        springBootApp.push("${env.BUILD_NUMBER}")
-                        springBootApp.push("latest")
-
-                    
-                    }
-                }
-            }
-            
-        }
-        stage('Deploy to angualr') {
-            steps {
-                script {
-                    docker.withRegistry('448491001185.dkr.ecr.us-east-1.amazonaws.com', 'aws-credentials') {
-                        // Define the images
-        
-                        def angularImage = "angular-ecommerce"
-
-                        // Push the Angular image
-                        def angularApp = docker.image(angularImage)
-                        angularApp.push("${env.BUILD_NUMBER}")
-                        angularApp.push("latest")
+                        // Tag and push Angular image
+                        def angularTag = bat(script: 'docker tag angular-ecommerce:latest 448491001185.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest', returnStatus: true)
+                        if (angularTag != 0) {
+                            error 'Failed to tag Docker image for Angular.'
+                        }
+                        def angularPush = bat(script: 'docker push 448491001185.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest', returnStatus: true)
+                        if (angularPush != 0) {
+                            error 'Failed to push Docker image for Angular.'
+                        }
+                        
+                        echo 'Docker images pushed to ECR successfully.'
                     }
                 }
             }
@@ -146,7 +156,7 @@ pipeline {
 
     post {
         success {
-            echo 'All tests, builds, and deployments completed successfully and pushed to aws ecr!'
+            echo 'All tests, builds, and deployments completed successfully and pushed to AWS ECR!'
         }
         failure {
             echo 'Some tests, builds, or deployments failed.'
