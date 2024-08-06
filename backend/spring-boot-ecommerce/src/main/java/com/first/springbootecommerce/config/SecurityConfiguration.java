@@ -89,6 +89,7 @@ public class SecurityConfiguration {
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {
+		System.out.println("hiiiii");
 		return new BCryptPasswordEncoder();
 	}
 

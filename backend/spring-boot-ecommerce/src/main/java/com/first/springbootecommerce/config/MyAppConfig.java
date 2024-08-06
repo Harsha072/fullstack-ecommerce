@@ -17,6 +17,7 @@ public class MyAppConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
+		System.out.println("hiiiii");
 		registry.addMapping(basePath + "/**")
 				.allowedOrigins("*")
 				.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
