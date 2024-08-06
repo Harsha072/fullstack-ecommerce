@@ -1,3 +1,4 @@
+version: '3.8'
 
 services:
   mysqldb:
@@ -11,7 +12,6 @@ services:
       - "3307:3306"
     networks:
       - springapimysql-net
-
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost"]
       interval: 30s
@@ -19,27 +19,29 @@ services:
       retries: 5
 
   api_service:
+    build:
+      context: ./backend/spring-boot-ecommerce
+      dockerfile: Dockerfile
     image: harshaswamy789475/spring-boot-ecommerce
-
-    build: ./backend/spring-boot-ecommerce
     restart: always
     environment:
-      - MYSQL_HOST=mysqldb
-      - MYSQL_PORT=3306
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=reset@123
+      MYSQL_HOST: mysqldb
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: reset@123
     ports:
       - "8090:8080"
     depends_on:
-
       mysqldb:
         condition: service_healthy
     networks:
       - springapimysql-net
 
   angular_service:
+    build:
+      context: ./frontend/angular-ecommerce
+      dockerfile: Dockerfile
     image: harshaswamy789475/angular-ecommerce
-    build: ./frontend/angular-ecommerce
     restart: always
     ports:
       - "4200:80"
@@ -48,7 +50,6 @@ services:
         condition: service_healthy
       api_service:
         condition: service_started
-
     networks:
       - springapimysql-net
 
