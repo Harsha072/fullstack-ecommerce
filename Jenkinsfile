@@ -120,27 +120,27 @@ pipeline {
                         env.AWS_DEFAULT_REGION = 'us-east-1' // Adjust the region as needed
 
                         // Login to ECR
-                        def ecrLogin = bat(script: 'aws ecr get-login-password --region %AWS_DEFAULT_REGION% | docker login --username AWS --password-stdin 448491001185.dkr.ecr.us-east-1.amazonaws.com', returnStatus: true)
+                        def ecrLogin = bat(script: 'aws ecr get-login-password --region %AWS_DEFAULT_REGION% | docker login --username AWS --password-stdin 242201280065.dkr.ecr.us-east-1.amazonaws.com', returnStatus: true)
                         if (ecrLogin != 0) {
                             error 'Failed to login to AWS ECR. Please check your credentials and region.'
                         }
                         
                         // Tag and push Spring Boot image
-                        def springBootTag = bat(script: 'docker tag spring-boot-ecommerce:latest 448491001185.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest', returnStatus: true)
+                        def springBootTag = bat(script: 'docker tag spring-boot-ecommerce:latest 242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest', returnStatus: true)
                         if (springBootTag != 0) {
                             error 'Failed to tag Docker image for Spring Boot.'
                         }
-                        def springBootPush = bat(script: 'docker push 448491001185.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest', returnStatus: true)
+                        def springBootPush = bat(script: 'docker push 242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest', returnStatus: true)
                         if (springBootPush != 0) {
                             error 'Failed to push Docker image for Spring Boot.'
                         }
 
                         // Tag and push Angular image
-                        def angularTag = bat(script: 'docker tag angular-ecommerce:latest 448491001185.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest', returnStatus: true)
+                        def angularTag = bat(script: 'docker tag angular-ecommerce:latest 242201280065.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest', returnStatus: true)
                         if (angularTag != 0) {
                             error 'Failed to tag Docker image for Angular.'
                         }
-                        def angularPush = bat(script: 'docker push 448491001185.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest', returnStatus: true)
+                        def angularPush = bat(script: 'docker push 242201280065.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest', returnStatus: true)
                         if (angularPush != 0) {
                             error 'Failed to push Docker image for Angular.'
                         }
