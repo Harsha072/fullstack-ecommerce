@@ -139,7 +139,7 @@ pipeline {
                         def angularTag = bat(script: 'docker tag angular-ecommerce:latest 242201280065.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest', returnStatus: true)
                         if (angularTag != 0) {
                             error 'Failed to tag Docker image for Angular.'
-                        }
+                                     }
                         def angularPush = bat(script: 'docker push 242201280065.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest', returnStatus: true)
                         if (angularPush != 0) {
                             error 'Failed to push Docker image for Angular.'
@@ -150,6 +150,33 @@ pipeline {
                 }
             }
         }
+        stage('Deploy CloudFormation Stack') {
+            steps {
+                echo 'Deploying CloudFormation stack...'
+                script {
+                    withCredentials([[
+                        $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: 'aws-credentials'
+                    ]]) {
+                        // Deploy the CloudFormation stack using AWS CLI
+                        def stackDeploy = bat(script: """
+                        aws cloudformation deploy \\
+                            --template-file template.yml \\
+                            --stack-name ecommerce-stack \\
+                            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \\
+                            --region %AWS_DEFAULT_REGION%
+                        """, returnStatus: true)
+
+                        if (stackDeploy != 0) {
+                            error 'Failed to deploy CloudFormation stack.'
+                        }
+
+                        echo 'CloudFormation stack deployed successfully.'
+                    }
+                }
+            }
+        }
+
     }
 
     post {
