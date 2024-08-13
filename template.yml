@@ -1,34 +1,22 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Deploys an ECS cluster and service with an ECR repository
+Description: Updates ECS Task Definition and Service in an existing cluster
 
 Resources:
-  # ECR Repository for Docker Images
-  ECRRepository:
-    Type: 'AWS::ECR::Repository'
-    Properties: 
-      RepositoryName: 'full-stack-ecommerce'
-  
-  # ECS Cluster
-  ECSCluster:
-    Type: 'AWS::ECS::Cluster'
-    Properties:
-      ClusterName: 'my-ecs-cluster'
-  
   # ECS Task Definition
   ECSTaskDefinition:
     Type: 'AWS::ECS::TaskDefinition'
     Properties:
       Family: 'my-task-definition'
-      NetworkMode: 'bridge'
+      NetworkMode: 'awsvpc'  # Changed to 'awsvpc' to align with Fargate
       ContainerDefinitions:
-        - Name: 'api_service'
-          Image: !Sub '${ECRRepository.RepositoryUri}:latest'
+        - Name: 'sringboot-ecommerce'
+          Image: '242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest'
           Essential: true
           Memory: 512
           Cpu: 256
           PortMappings:
             - ContainerPort: 8080
-              HostPort: 8090
+              HostPort: 8080  # HostPort should match ContainerPort for 'awsvpc' mode
           Environment:
             - Name: MYSQL_HOST
               Value: 'mysqldb'
@@ -39,56 +27,50 @@ Resources:
             - Name: MYSQL_PASSWORD
               Value: 'reset@123'
   
-  # ECS Service
-  ECSService:
-    Type: 'AWS::ECS::Service'
-    Properties:
-      Cluster: !Ref ECSCluster
-      DesiredCount: 1
-      TaskDefinition: !Ref ECSTaskDefinition
-      LaunchType: 'FARGATE'  # Use 'FARGATE' if you are using the Fargate launch type
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          Subnets:
-            - subnet-xxxxxxxx
-          SecurityGroups:
-            - sg-xxxxxxxx
-          AssignPublicIp: 'ENABLED'
+  # # ECS Service
+  # ECSService:
+  #   Type: 'AWS::ECS::Service'
+  #   Properties:
+  #     Cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/my-existing-cluster'  # Update with your existing cluster ARN
+  #     DesiredCount: 1
+  #     TaskDefinition: !Ref ECSTaskDefinition
+  #     LaunchType: 'FARGATE'  # Use 'FARGATE' if you are using the Fargate launch type
+  #     NetworkConfiguration:
+  #       AwsvpcConfiguration:
+  #         Subnets:
+  #           - subnet-xxxxxxxx  # Update with your existing private subnet IDs
+  #         SecurityGroups:
+  #           - sg-xxxxxxxx  # Update with your existing security group IDs
+  #         AssignPublicIp: 'DISABLED'  # Adjust based on your needs (ENABLE if required)
   
-  # IAM Role for ECS Task Execution
-  ECSTaskExecutionRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      RoleName: 'ecsTaskExecutionRole'
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: 'Allow'
-            Principal:
-              Service: 'ecs-tasks.amazonaws.com'
-            Action: 'sts:AssumeRole'
-      Policies:
-        - PolicyName: 'ecsTaskExecutionPolicy'
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: 'Allow'
-                Action:
-                  - 'ecr:GetAuthorizationToken'
-                  - 'ecr:BatchCheckLayerAvailability'
-                  - 'ecr:GetDownloadUrlForLayer'
-                  - 'ecr:BatchGetImage'
-                Resource: '*'
-              - Effect: 'Allow'
-                Action:
-                  - 'logs:CreateLogStream'
-                  - 'logs:PutLogEvents'
-                Resource: '*'
+  # # IAM Role for ECS Task Execution
+  # ECSTaskExecutionRole:
+  #   Type: 'AWS::IAM::Role'
+  #   Properties:
+  #     RoleName: 'ecsTaskExecutionRole'
+  #     AssumeRolePolicyDocument:
+  #       Version: '2012-10-17'
+  #       Statement:
+  #         - Effect: 'Allow'
+  #           Principal:
+  #             Service: 'ecs-tasks.amazonaws.com'
+  #           Action: 'sts:AssumeRole'
+  #     Policies:
+  #       - PolicyName: 'ecsTaskExecutionPolicy'
+  #         PolicyDocument:
+  #           Version: '2012-10-17'
+  #           Statement:
+  #             - Effect: 'Allow'
+  #               Action:
+  #                 - 'ecr:GetAuthorizationToken'
+  #                 - 'ecr:BatchCheckLayerAvailability'
+  #                 - 'ecr:GetDownloadUrlForLayer'
+  #                 - 'ecr:BatchGetImage'
+  #               Resource: '*'
+  #             - Effect: 'Allow'
+  #               Action:
+  #                 - 'logs:CreateLogStream'
+  #                 - 'logs:PutLogEvents'
+  #               Resource: '*'
 
-Outputs:
-  ECRRepositoryUri:
-    Description: 'URI of the ECR repository'
-    Value: !Sub '${ECRRepository.RepositoryUri}'
-  ECSClusterName:
-    Description: 'Name of the ECS cluster'
-    Value: !Ref ECSCluster
+
