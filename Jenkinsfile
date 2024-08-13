@@ -150,32 +150,29 @@ pipeline {
                 }
             }
         }
+        
         stage('Deploy CloudFormation Stack') {
-            steps {
-                echo 'Deploying CloudFormation stack...'
-                script {
-                    withCredentials([[
-                        $class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: 'aws-credentials'
-                    ]]) {
-                        // Deploy the CloudFormation stack using AWS CLI
-                        def stackDeploy = bat(script: """
-                        aws cloudformation deploy \\
-                            --template-file template.yml \\
-                            --stack-name ecommerce-stack \\
-                            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \\
-                            --region %AWS_DEFAULT_REGION%
-                        """, returnStatus: true)
+    steps {
+        echo 'Deploying CloudFormation stack...'
+        script {
+            withCredentials([[
+                $class: 'AmazonWebServicesCredentialsBinding',
+                credentialsId: 'aws-credentials'
+            ]]) {
+                // Deploy the CloudFormation stack using AWS CLI
+                def stackDeploy = bat(script: """
+                aws cloudformation deploy --template-file template.yml --stack-name ecommerce-stack --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --region %AWS_DEFAULT_REGION%
+                """, returnStatus: true)
 
-                        if (stackDeploy != 0) {
-                            error 'Failed to deploy CloudFormation stack.'
-                        }
-
-                        echo 'CloudFormation stack deployed successfully.'
-                    }
+                if (stackDeploy != 0) {
+                    error 'Failed to deploy CloudFormation stack.'
                 }
+
+                echo 'CloudFormation stack deployed successfully.'
             }
         }
+    }
+}
 
     }
 
