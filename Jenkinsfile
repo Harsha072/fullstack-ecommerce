@@ -139,7 +139,7 @@ pipeline {
                         def angularTag = bat(script: 'docker tag angular-ecommerce:latest 242201280065.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest', returnStatus: true)
                         if (angularTag != 0) {
                             error 'Failed to tag Docker image for Angular.'
-                                     }
+                        }
                         def angularPush = bat(script: 'docker push 242201280065.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest', returnStatus: true)
                         if (angularPush != 0) {
                             error 'Failed to push Docker image for Angular.'
@@ -150,11 +150,6 @@ pipeline {
                 }
             }
         }
-      
-
-        
-
-
     }
 
     post {
