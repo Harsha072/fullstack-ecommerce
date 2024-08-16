@@ -150,29 +150,58 @@ pipeline {
                 }
             }
         }
-        
-        stage('Deploy CloudFormation Stack') {
+        stage('Update ECS Service') {
+    environment {
+        TASK_FAMILY = "springboot-api-task"
+        ECR_IMAGE = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
+        CLUSTER_NAME = "ecommerce-cluster"
+        SERVICE_NAME = "api-service"
+        AWS_REGION = "us-east-1"
+    }
     steps {
-        echo 'Deploying CloudFormation stack...'
-        script {
-            withCredentials([[
-                $class: 'AmazonWebServicesCredentialsBinding',
-                credentialsId: 'aws-credentials'
-            ]]) {
-                // Deploy the CloudFormation stack using AWS CLI
-                def stackDeploy = bat(script: """
-                aws cloudformation deploy --template-file template.yml --stack-name ecommerce-stack --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --region %AWS_DEFAULT_REGION%
-                """, returnStatus: true)
+        withAWS(credentials: "aws-credentials", region: "${AWS_REGION}") {
+            script {
+                sh '''
+                    # Describe the current task definition
+                    TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition "$TASK_FAMILY" --region "$AWS_REGION")
 
-                if (stackDeploy != 0) {
-                    error 'Failed to deploy CloudFormation stack.'
-                }
+                    # Extract the old revision
+                    OLD_REVISION=$(echo $TASK_DEFINITION | jq '.taskDefinition.revision')
 
-                echo 'CloudFormation stack deployed successfully.'
+                    # Update the task definition with the new image
+                    NEW_TASK_DEFINITION=$(echo $TASK_DEFINITION | jq --arg IMAGE "$ECR_IMAGE" '
+                        .taskDefinition |
+                        .containerDefinitions[0].image = $IMAGE |
+                        del(.taskDefinitionArn) |
+                        del(.revision) |
+                        del(.status) |
+                        del(.requiresAttributes) |
+                        del(.compatibilities) |
+                        del(.registeredAt) |
+                        del(.registeredBy)
+                    ')
+
+                    # Register the new task definition
+                    NEW_TASK_INFO=$(aws ecs register-task-definition --region "$AWS_REGION" --cli-input-json "$NEW_TASK_DEFINITION")
+
+                    # Extract the new revision number
+                    NEW_REVISION=$(echo $NEW_TASK_INFO | jq '.taskDefinition.revision')
+
+                    # Update the ECS service with the new task definition revision
+                    aws ecs update-service --cluster $CLUSTER_NAME \
+                                           --service $SERVICE_NAME \
+                                           --task-definition $TASK_FAMILY:$NEW_REVISION
+
+                    # Optionally, deregister the old task definition revision
+                    aws ecs deregister-task-definition --task-definition $TASK_FAMILY:$OLD_REVISION
+                '''
             }
         }
     }
 }
+
+        
+
 
     }
 
