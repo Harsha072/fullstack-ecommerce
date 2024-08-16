@@ -150,7 +150,7 @@ pipeline {
                 }
             }
         }
-        stage('Update ECS Service') {
+      stage('Update ECS Service') {
     environment {
         TASK_FAMILY = "springboot-api-task"
         ECR_IMAGE = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
@@ -161,44 +161,42 @@ pipeline {
     steps {
         withAWS(credentials: "aws-credentials", region: "${AWS_REGION}") {
             script {
-                sh '''
-                    # Describe the current task definition
-                    TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition "$TASK_FAMILY" --region "$AWS_REGION")
+                bat '''
+                    REM Describe the current task definition
+                    for /f "tokens=*" %%a in ('aws ecs describe-task-definition --task-definition "%TASK_FAMILY%" --region "%AWS_REGION%"') do set "TASK_DEFINITION=%%a"
 
-                    # Extract the old revision
-                    OLD_REVISION=$(echo $TASK_DEFINITION | jq '.taskDefinition.revision')
+                    REM Extract the old revision
+                    for /f "tokens=*" %%a in ('echo %TASK_DEFINITION% ^| jq ".taskDefinition.revision"') do set "OLD_REVISION=%%a"
 
-                    # Update the task definition with the new image
-                    NEW_TASK_DEFINITION=$(echo $TASK_DEFINITION | jq --arg IMAGE "$ECR_IMAGE" '
-                        .taskDefinition |
-                        .containerDefinitions[0].image = $IMAGE |
-                        del(.taskDefinitionArn) |
-                        del(.revision) |
-                        del(.status) |
-                        del(.requiresAttributes) |
-                        del(.compatibilities) |
-                        del(.registeredAt) |
-                        del(.registeredBy)
-                    ')
+                    REM Update the task definition with the new image
+                    for /f "tokens=*" %%a in ('echo %TASK_DEFINITION% ^| jq --arg IMAGE "%ECR_IMAGE%" ".taskDefinition ^| .containerDefinitions[0].image = $IMAGE ^| del(.taskDefinitionArn) ^| del(.revision) ^| del(.status) ^| del(.requiresAttributes) ^| del(.compatibilities) ^| del(.registeredAt) ^| del(.registeredBy)"') do set "NEW_TASK_DEFINITION=%%a"
 
-                    # Register the new task definition
-                    NEW_TASK_INFO=$(aws ecs register-task-definition --region "$AWS_REGION" --cli-input-json "$NEW_TASK_DEFINITION")
+                    REM Register the new task definition
+                    for /f "tokens=*" %%a in ('aws ecs register-task-definition --region "%AWS_REGION%" --cli-input-json "%NEW_TASK_DEFINITION%"') do set "NEW_TASK_INFO=%%a"
 
-                    # Extract the new revision number
-                    NEW_REVISION=$(echo $NEW_TASK_INFO | jq '.taskDefinition.revision')
+                    REM Extract the new revision number
+                    for /f "tokens=*" %%a in ('echo %NEW_TASK_INFO% ^| jq ".taskDefinition.revision"') do set "NEW_REVISION=%%a"
 
-                    # Update the ECS service with the new task definition revision
-                    aws ecs update-service --cluster $CLUSTER_NAME \
-                                           --service $SERVICE_NAME \
-                                           --task-definition $TASK_FAMILY:$NEW_REVISION
+                    REM Update the ECS service with the new task definition revision
+                    aws ecs update-service --cluster %CLUSTER_NAME% --service %SERVICE_NAME% --task-definition %TASK_FAMILY%:%NEW_REVISION%
 
-                    # Optionally, deregister the old task definition revision
-                    aws ecs deregister-task-definition --task-definition $TASK_FAMILY:$OLD_REVISION
+                    REM Optionally, deregister the old task definition revision
+                    aws ecs deregister-task-definition --task-definition %TASK_FAMILY%:%OLD_REVISION%
+                '''
+                  // Adding a conditional check to confirm the update
+                bat '''
+                    if "%CURRENT_TASK_DEFINITION%"=="arn:aws:ecs:%AWS_REGION%:%AWS_ACCOUNT_ID%:task-definition/%TASK_FAMILY%:%NEW_REVISION%" (
+                        echo Task Definition updated successfully!
+                    ) else (
+                        echo ERROR: Task Definition update failed!
+                        exit /b 1
+                    )
                 '''
             }
         }
     }
 }
+
 
         
 
