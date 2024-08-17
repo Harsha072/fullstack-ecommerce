@@ -126,10 +126,9 @@ pipeline {
                script {
     withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
         // Fetch the latest image tag from ECR
-        def latestImageTag = bat(script: 'aws ecr describe-images --repository-name spring-boot-ecommerce --query "imageDetails | sort_by(@, &imagePushedAt) | [-1].imageTags[0]" --output text', returnStdout: true).trim()
-
+        def latestImageTag = 'latest'
         // Ensure there's no extra whitespace in the tag
-        latestImageTag = latestImageTag.replaceAll("\\s", "")
+      
 
         // Construct the image URI
         def imageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:${latestImageTag}"
