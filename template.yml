@@ -1,76 +1,25 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Updates ECS Task Definition and Service in an existing cluster
+Description: A simple CloudFormation template to create an ECS Task Definition
 
 Resources:
-  # ECS Task Definition
-  ECSTaskDefinition:
-    Type: 'AWS::ECS::TaskDefinition'
+  MyTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: 'my-task-definition'
-      NetworkMode: 'awsvpc'  # Changed to 'awsvpc' to align with Fargate
+      Family: my-task-new
+      NetworkMode: bridge  # You can change this to 'awsvpc', 'host', etc., based on your needs
       ContainerDefinitions:
-        - Name: 'sringboot-ecommerce'
-          Image: '242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest'
-          Essential: true
+        - Name: my-container
+          Image: 242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest
           Memory: 512
           Cpu: 256
+          Essential: true
           PortMappings:
             - ContainerPort: 8080
-              HostPort: 8080  # HostPort should match ContainerPort for 'awsvpc' mode
-          Environment:
-            - Name: MYSQL_HOST
-              Value: 'mysqldb'
-            - Name: MYSQL_PORT
-              Value: '3306'
-            - Name: MYSQL_USER
-              Value: 'root'
-            - Name: MYSQL_PASSWORD
-              Value: 'reset@123'
-  
-  # # ECS Service
-  # ECSService:
-  #   Type: 'AWS::ECS::Service'
-  #   Properties:
-  #     Cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/my-existing-cluster'  # Update with your existing cluster ARN
-  #     DesiredCount: 1
-  #     TaskDefinition: !Ref ECSTaskDefinition
-  #     LaunchType: 'FARGATE'  # Use 'FARGATE' if you are using the Fargate launch type
-  #     NetworkConfiguration:
-  #       AwsvpcConfiguration:
-  #         Subnets:
-  #           - subnet-xxxxxxxx  # Update with your existing private subnet IDs
-  #         SecurityGroups:
-  #           - sg-xxxxxxxx  # Update with your existing security group IDs
-  #         AssignPublicIp: 'DISABLED'  # Adjust based on your needs (ENABLE if required)
-  
-  # # IAM Role for ECS Task Execution
-  # ECSTaskExecutionRole:
-  #   Type: 'AWS::IAM::Role'
-  #   Properties:
-  #     RoleName: 'ecsTaskExecutionRole'
-  #     AssumeRolePolicyDocument:
-  #       Version: '2012-10-17'
-  #       Statement:
-  #         - Effect: 'Allow'
-  #           Principal:
-  #             Service: 'ecs-tasks.amazonaws.com'
-  #           Action: 'sts:AssumeRole'
-  #     Policies:
-  #       - PolicyName: 'ecsTaskExecutionPolicy'
-  #         PolicyDocument:
-  #           Version: '2012-10-17'
-  #           Statement:
-  #             - Effect: 'Allow'
-  #               Action:
-  #                 - 'ecr:GetAuthorizationToken'
-  #                 - 'ecr:BatchCheckLayerAvailability'
-  #                 - 'ecr:GetDownloadUrlForLayer'
-  #                 - 'ecr:BatchGetImage'
-  #               Resource: '*'
-  #             - Effect: 'Allow'
-  #               Action:
-  #                 - 'logs:CreateLogStream'
-  #                 - 'logs:PutLogEvents'
-  #               Resource: '*'
+              HostPort: 8080
+      RequiresCompatibilities:
+        - EC2  # Change to 'FARGATE' if you are using AWS Fargate
 
-
+Outputs:
+  TaskDefinitionArn:
+    Description: "ARN of the created ECS Task Definition"
+    Value: !Ref MyTaskDefinition

@@ -120,42 +120,14 @@ pipeline {
             }
 
         }
-     stage('Update ECS Service') {
-    steps {
-        script {
-            withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
-                // Fetch the current task definition
-                def taskDefinition = bat(script: 'aws ecs describe-task-definition --task-definition backend-api', returnStdout: true).trim()
-                
-                // Write the task definition to a file
-                writeFile file: 'task_definition.json', text: taskDefinition
-                
-                // Update the task definition JSON file with the new image
-                bat(script: '''
-                    jq --arg IMAGE "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest" ^
-                    ".taskDefinition.containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)" ^
-                    task_definition.json > new_task_definition.json
-                ''')
-                
-                // Register the new task definition
-                def newTaskInfo = bat(script: 'aws ecs register-task-definition --cli-input-json file://new_task_definition.json', returnStdout: true).trim()
-                
-                // Extract the new revision number
-                def newRevision = bat(script: 'echo %newTaskInfo% | jq -r ".taskDefinition.revision"', returnStdout: true).trim()
-                
-                // Update the ECS service to use the new task definition
-                // bat "aws ecs update-service --cluster your-cluster-name --service your-service-name --task-definition backend-api:${newRevision} --force-new-deployment"
-                
-                // // Extract the old revision number from the task definition
-                // def oldRevision = bat(script: 'echo %taskDefinition% | jq -r ".taskDefinition.revision"', returnStdout: true).trim()
-                
-                // // Deregister the old task definition
-                // bat "aws ecs deregister-task-definition --task-definition backend-api:${oldRevision}"
+      stage('Deploy CloudFormation Stack') {
+            steps {
+                script {
+                    withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
+                        bat 'aws cloudformation deploy --template-file template.yml --stack-name my-stack-new --capabilities CAPABILITY_IAM'
+                    }
+                }
             }
-        }
-    }
-}
-
 
     }
 
