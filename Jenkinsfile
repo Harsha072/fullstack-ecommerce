@@ -120,7 +120,7 @@ pipeline {
             }
 
         }
-       stage('Update ECS Service') {
+     stage('Update ECS Service') {
     steps {
         script {
             withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
@@ -144,11 +144,18 @@ pipeline {
                 def newRevision = bat(script: 'echo %newTaskInfo% | jq -r ".taskDefinition.revision"', returnStdout: true).trim()
                 
                 // Update the ECS service to use the new task definition
-                bat "aws ecs update-service --cluster your-cluster-name --service your-service-name --task-definition backend-api:${newRevision} --force-new-deployment"
+                // bat "aws ecs update-service --cluster your-cluster-name --service your-service-name --task-definition backend-api:${newRevision} --force-new-deployment"
+                
+                // // Extract the old revision number from the task definition
+                // def oldRevision = bat(script: 'echo %taskDefinition% | jq -r ".taskDefinition.revision"', returnStdout: true).trim()
+                
+                // // Deregister the old task definition
+                // bat "aws ecs deregister-task-definition --task-definition backend-api:${oldRevision}"
             }
         }
     }
 }
+
 
     }
 
