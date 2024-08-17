@@ -27,19 +27,6 @@ pipeline {
                 }
             }
         }
-        // stage('Run Tests - Angular') {
-        //     steps {
-        //         dir('frontend/angular-ecommerce') {
-        //             echo 'Running Angular tests...'
-        //             script {
-        //                 def testResult = bat(script: 'npm run test:ci', returnStatus: true)
-        //                 if (testResult != 0) {
-        //                     error 'Angular tests failed. Stopping the pipeline.'
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
         stage('Build Angular') {
             steps {
                 dir('frontend/angular-ecommerce') {
@@ -56,19 +43,6 @@ pipeline {
                 }
             }
         }
-        // stage('Run Tests - Maven') {
-        //     steps {
-        //         dir('backend/spring-boot-ecommerce') {
-        //             echo 'Running Maven tests...'
-        //             script {
-        //                 def testResult = bat(script: 'mvn test', returnStatus: true)
-        //                 if (testResult != 0) {
-        //                     error 'Maven tests failed. Stopping the pipeline.'
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
         stage('Build JAR - Maven') {
             steps {
                 dir('backend/spring-boot-ecommerce') {
@@ -111,21 +85,17 @@ pipeline {
             steps {
                 echo 'Authenticating Docker to AWS ECR and pushing images...'
                 script {
-                    // Use the credentials configured in Jenkins
                     withCredentials([[
                         $class: 'AmazonWebServicesCredentialsBinding', 
                         credentialsId: 'aws-credentials'
                     ]]) {
-                        // Set AWS environment variables from the injected credentials
-                        env.AWS_DEFAULT_REGION = 'us-east-1' // Adjust the region as needed
+                        env.AWS_DEFAULT_REGION = 'us-east-1'
 
-                        // Login to ECR
                         def ecrLogin = bat(script: 'aws ecr get-login-password --region %AWS_DEFAULT_REGION% | docker login --username AWS --password-stdin 242201280065.dkr.ecr.us-east-1.amazonaws.com', returnStatus: true)
                         if (ecrLogin != 0) {
                             error 'Failed to login to AWS ECR. Please check your credentials and region.'
                         }
-                        
-                        // Tag and push Spring Boot image
+
                         def springBootTag = bat(script: 'docker tag spring-boot-ecommerce:latest 242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest', returnStatus: true)
                         if (springBootTag != 0) {
                             error 'Failed to tag Docker image for Spring Boot.'
@@ -135,7 +105,6 @@ pipeline {
                             error 'Failed to push Docker image for Spring Boot.'
                         }
 
-                        // Tag and push Angular image
                         def angularTag = bat(script: 'docker tag angular-ecommerce:latest 242201280065.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest', returnStatus: true)
                         if (angularTag != 0) {
                             error 'Failed to tag Docker image for Angular.'
@@ -150,33 +119,26 @@ pipeline {
                 }
             }
         }
-        //here
         stage('Update ECS Service') {
             steps {
                 script {
                     withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
-                        // Fetch the current task definition
                         def taskDefinition = bat(script: 'aws ecs describe-task-definition --task-definition backend-api', returnStdout: true).trim()
 
-                        // Update the task definition with the new image
                         bat(script: '''
                             echo %taskDefinition% | jq --arg IMAGE "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest" ^
                             ".taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)" > new_task_definition.json
                         ''')
 
-                        // Register the new task definition
                         def newTaskInfo = bat(script: 'aws ecs register-task-definition --cli-input-json file://new_task_definition.json', returnStdout: true).trim()
 
-                        // Extract the new revision number
                         def newRevision = bat(script: 'echo %newTaskInfo% | jq -r ".taskDefinition.revision"', returnStdout: true).trim()
 
-                        // Update the ECS service to use the new task definition
                         bat "aws ecs update-service --cluster your-cluster-name --service your-service-name --task-definition springboot-api-task:%newRevision% --force-new-deployment"
                     }
                 }
             }
-
-
+        }
     }
 
     post {
