@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        registry = "242201280065.dkr.ecr.us-east-1.amazonaws.com"
+        
         registryCredential = "ecr:us-east-1:aws-credentials"
         clusterName = "ecommerce-cluster"
         AWS_DEFAULT_REGION = 'us-east-1'
@@ -65,24 +65,36 @@ pipeline {
                         $class: 'AmazonWebServicesCredentialsBinding',
                         credentialsId: 'aws-credentials'
                     ]]) {
-                        def ecrLogin = bat(script: 'aws ecr get-login-password --region %AWS_DEFAULT_REGION% | docker login --username AWS --password-stdin ${registry}', returnStatus: true)
+                        env.AWS_DEFAULT_REGION = 'us-east-1'
+
+                        def ecrLogin = bat(script: 'aws ecr get-login-password --region %AWS_DEFAULT_REGION% | docker login --username AWS --password-stdin 242201280065.dkr.ecr.us-east-1.amazonaws.com', returnStatus: true)
                         if (ecrLogin != 0) {
                             error 'Failed to login to AWS ECR. Please check your credentials and region.'
                         }
 
-                        def springBootTag = bat(script: 'docker tag spring-boot-ecommerce:latest ${registry}/spring-boot-ecommerce:latest', returnStatus: true)
+                        def springBootTag = bat(script: 'docker tag spring-boot-ecommerce:latest 242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest', returnStatus: true)
                         if (springBootTag != 0) {
                             error 'Failed to tag Docker image for Spring Boot.'
                         }
-                        def springBootPush = bat(script: 'docker push ${registry}/spring-boot-ecommerce:latest', returnStatus: true)
+                        def springBootPush = bat(script: 'docker push 242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest', returnStatus: true)
                         if (springBootPush != 0) {
                             error 'Failed to push Docker image for Spring Boot.'
                         }
+
+                        // def angularTag = bat(script: 'docker tag angular-ecommerce:latest 242201280065.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest', returnStatus: true)
+                        // if (angularTag != 0) {
+                        //     error 'Failed to tag Docker image for Angular.'
+                        // }
+                        // def angularPush = bat(script: 'docker push 242201280065.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest', returnStatus: true)
+                        // if (angularPush != 0) {
+                        //     error 'Failed to push Docker image for Angular.'
+                        // }
 
                         echo 'Docker images pushed to ECR successfully.'
                     }
                 }
             }
+
         }
         stage("Update ECS Service") {
             environment {
