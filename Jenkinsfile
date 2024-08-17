@@ -129,7 +129,7 @@ pipeline {
                         def imageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:${latestImageTag}"
                         
                         // Deploy CloudFormation stack with the latest image URI
-                        sh "aws cloudformation deploy --template-file template.yml --stack-name my-stack --capabilities CAPABILITY_IAM --parameter-overrides DockerImageURI=${imageUri}"
+                        bat "aws cloudformation deploy --template-file template.yml --stack-name my-stack --capabilities CAPABILITY_IAM --parameter-overrides DockerImageURI=${imageUri}"
                     }
                 }
             }
