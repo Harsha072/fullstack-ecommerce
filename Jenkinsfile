@@ -118,20 +118,19 @@ pipeline {
                     }
                 }
             }
-
         }
-     stage{
-         steps {
+
+        stage('Deploy CloudFormation Stack') {
+            steps {
                 script {
                     withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
                         bat 'aws cloudformation deploy --template-file template.yml --stack-name my-stack-new --capabilities CAPABILITY_IAM'
                     }
                 }
-         }
-     }
+            }
+        }
 
-
-
+        
     }
 
     post {
