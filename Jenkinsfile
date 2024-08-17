@@ -87,7 +87,7 @@ pipeline {
         stage("Update ECS Service") {
             environment {
                 TASK_FAMILY = "backend-api-backup"
-                ECR_IMAGE = "${registry}/spring-boot-ecommerce:latest"
+                ECR_IMAGE = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
                 SERVICE_NAME = "springboot-api-service"
             }            
             steps {
