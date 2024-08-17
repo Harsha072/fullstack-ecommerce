@@ -120,17 +120,21 @@ pipeline {
             }
         }
 
-        stage('Deploy CloudFormation Stack') {
+       stage('Fetch Latest Docker Image') {
             steps {
                 script {
                     withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
-                        bat 'aws cloudformation deploy --template-file template.yml --stack-name my-stack-new --capabilities CAPABILITY_IAM'
+                        // Fetch the latest image URI from ECR
+                        def latestImageTag = bat(script: 'aws ecr describe-images --repository-name spring-boot-ecommerce --query "imageDetails | sort_by(@, &imagePushedAt) | [-1].imageTags[0]" --output text', returnStdout: true).trim()
+                        def imageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:${latestImageTag}"
+                        
+                        // Deploy CloudFormation stack with the latest image URI
+                        sh "aws cloudformation deploy --template-file template.yml --stack-name my-stack --capabilities CAPABILITY_IAM --parameter-overrides DockerImageURI=${imageUri}"
                     }
                 }
             }
         }
 
-        
     }
 
     post {

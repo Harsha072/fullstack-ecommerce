@@ -1,25 +1,27 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: A simple CloudFormation template to create an ECS Task Definition
+Description: ECS Task Definition and Service Update with New Docker Image
+
+Parameters:
+  DockerImageURI:
+    Type: String
+    Description: The URI of the Docker image to be used in the task definition.
 
 Resources:
+
   MyTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: my-task-new
-      NetworkMode: bridge  # You can change this to 'awsvpc', 'host', etc., based on your needs
+      Family: my-task-family
       ContainerDefinitions:
         - Name: my-container
-          Image: 242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest
+          Image: !Ref DockerImageURI
           Memory: 512
           Cpu: 256
           Essential: true
-          PortMappings:
-            - ContainerPort: 8080
-              HostPort: 8080
-      RequiresCompatibilities:
-        - EC2  # Change to 'FARGATE' if you are using AWS Fargate
+
+
 
 Outputs:
   TaskDefinitionArn:
-    Description: "ARN of the created ECS Task Definition"
     Value: !Ref MyTaskDefinition
+ 
