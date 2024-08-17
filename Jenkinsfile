@@ -1,8 +1,8 @@
-
 pipeline {
     agent any
 
     stages {
+        /*
         stage('Checkout') {
             steps {
                 echo 'Checking out the code'
@@ -73,7 +73,6 @@ pipeline {
                     echo 'Building Docker image for Angular...'
                     script {
                         def imageName = 'angular-ecommerce'
-                        /* groovylint-disable-next-line LineLength */
                         def dockerBuild = bat(script: "docker build -t ${imageName}:${env.BUILD_NUMBER} -t ${imageName}:latest .", returnStatus: true)
                         if (dockerBuild != 0) {
                             error 'Docker image build failed for Angular.'
@@ -121,24 +120,24 @@ pipeline {
                 }
             }
         }
-
-       stage('Fetch Latest Docker Image') {
+        */
+        stage('Fetch Latest Docker Image') {
             steps {
                 script {
-    withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
-        // Fetch the latest image tag from ECR
-        def latestImageTag = bat(script: 'aws ecr describe-images --repository-name spring-boot-ecommerce --query "imageDetails | sort_by(@, &imagePushedAt) | [-1].imageTags[0]" --output text', returnStdout: true).trim()
+                    withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
+                        // Fetch the latest image tag from ECR
+                        def latestImageTag = bat(script: 'aws ecr describe-images --repository-name spring-boot-ecommerce --query "imageDetails | sort_by(@, &imagePushedAt) | [-1].imageTags[0]" --output text', returnStdout: true).trim()
 
-        // Construct the image URI
-        def imageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:${latestImageTag}"
+                        // Construct the image URI
+                        def imageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:${latestImageTag}"
 
-        // Deploy CloudFormation stack with the latest image URI
-        bat "aws cloudformation deploy --template-file template.yml --stack-name my-stack --capabilities CAPABILITY_IAM --parameter-overrides DockerImageURI=${imageUri}"
-    }
+                        // Deploy CloudFormation stack with the latest image URI
+                        bat "aws cloudformation deploy --template-file template.yml --stack-name my-stack --capabilities CAPABILITY_IAM --parameter-overrides DockerImageURI=${imageUri}"
+                    }
                 }
             }
-
-       }
+        }
+    }
 
     post {
         success {
@@ -148,4 +147,4 @@ pipeline {
             echo 'Some tests, builds, or deployments failed.'
         }
     }
-    }
+}
