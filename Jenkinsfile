@@ -149,6 +149,41 @@ pipeline {
                     }
                 }
             }
+            stage('Update ECS Task Definition') {
+    steps {
+        echo 'Updating ECS task definition and service...'
+        script {
+            withCredentials([[
+                $class: 'AmazonWebServicesCredentialsBinding', 
+                credentialsId: 'aws-credentials'
+            ]]) {
+                env.AWS_DEFAULT_REGION = AWS_REGION
+
+                // Describe the current task definition
+                def taskDefinition = bat(script: "aws ecs describe-task-definition --task-definition ${TASK_DEFINITION_FAMILY} --region %AWS_DEFAULT_REGION%", returnStdout: true).trim()
+
+                // Update the task definition JSON with new image URIs
+                def updatedTaskDefinition = sh(script: """
+                    echo ${taskDefinition} | jq --arg IMAGE_SPRING "${SPRING_BOOT_IMAGE}" --arg IMAGE_ANGULAR "${ANGULAR_IMAGE}" '
+                        .taskDefinition.containerDefinitions[0].image = $IMAGE_SPRING |
+                        .taskDefinition.containerDefinitions[1].image = $IMAGE_ANGULAR |
+                        del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)
+                    ' > updated-task-definition.json
+                """, returnStdout: true).trim()
+
+                // Register the new task definition
+                def newTaskDefinition = bat(script: "aws ecs register-task-definition --cli-input-json file://updated-task-definition.json --region %AWS_DEFAULT_REGION%", returnStdout: true).trim()
+
+                // Extract new task definition revision
+                def newRevision = sh(script: "echo ${newTaskDefinition} | jq -r '.taskDefinition.revision'", returnStdout: true).trim()
+
+                // Update the ECS service with the new task definition revision
+                bat(script: "aws ecs update-service --cluster ${CLUSTER_NAME} --service ${SERVICE_NAME} --task-definition ${TASK_DEFINITION_FAMILY}:${newRevision} --region %AWS_DEFAULT_REGION%")
+            }
+        }
+    }
+}
+
         }
     }
 
