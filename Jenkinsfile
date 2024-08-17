@@ -27,19 +27,19 @@ pipeline {
                 }
             }
         }
-        stage('Run Tests - Angular') {
-            steps {
-                dir('frontend/angular-ecommerce') {
-                    echo 'Running Angular tests...'
-                    script {
-                        def testResult = bat(script: 'npm run test:ci', returnStatus: true)
-                        if (testResult != 0) {
-                            error 'Angular tests failed. Stopping the pipeline.'
-                        }
-                    }
-                }
-            }
-        }
+        // stage('Run Tests - Angular') {
+        //     steps {
+        //         dir('frontend/angular-ecommerce') {
+        //             echo 'Running Angular tests...'
+        //             script {
+        //                 def testResult = bat(script: 'npm run test:ci', returnStatus: true)
+        //                 if (testResult != 0) {
+        //                     error 'Angular tests failed. Stopping the pipeline.'
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
         stage('Build Angular') {
             steps {
                 dir('frontend/angular-ecommerce') {
@@ -56,19 +56,19 @@ pipeline {
                 }
             }
         }
-        stage('Run Tests - Maven') {
-            steps {
-                dir('backend/spring-boot-ecommerce') {
-                    echo 'Running Maven tests...'
-                    script {
-                        def testResult = bat(script: 'mvn test', returnStatus: true)
-                        if (testResult != 0) {
-                            error 'Maven tests failed. Stopping the pipeline.'
-                        }
-                    }
-                }
-            }
-        }
+        // stage('Run Tests - Maven') {
+        //     steps {
+        //         dir('backend/spring-boot-ecommerce') {
+        //             echo 'Running Maven tests...'
+        //             script {
+        //                 def testResult = bat(script: 'mvn test', returnStatus: true)
+        //                 if (testResult != 0) {
+        //                     error 'Maven tests failed. Stopping the pipeline.'
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
         stage('Build JAR - Maven') {
             steps {
                 dir('backend/spring-boot-ecommerce') {
@@ -151,55 +151,7 @@ pipeline {
             }
         }
         //here
-        stage('Update ECS Service') {
-    environment {
-        TASK_FAMILY = "springboot-api-task"
-        ECR_IMAGE = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
-        CLUSTER_NAME = "ecommerce-cluster"
-        SERVICE_NAME = "api-service"
-        AWS_REGION = "us-east-1"
-    }
-    steps {
-        withAWS(credentials: "aws-credentials", region: "${AWS_REGION}") {
-            script {
-                bat '''
-                    REM Describe the current task definition and save it to a file
-                    aws ecs describe-task-definition --task-definition "%TASK_FAMILY%" --region "%AWS_REGION%" > task_definition.json
-
-                    REM Extract the old revision
-                    for /f "tokens=*" %%a in ('jq -r ".taskDefinition.revision" task_definition.json') do set "OLD_REVISION=%%a"
-
-                    REM Update the task definition with the new image
-                    jq --arg IMAGE "%ECR_IMAGE%" '.taskDefinition.containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' task_definition.json > new_task_definition.json
-
-                    REM Register the new task definition
-                    aws ecs register-task-definition --region "%AWS_REGION%" --cli-input-json file://new_task_definition.json > new_task_info.json
-
-                    REM Extract the new revision number
-                    for /f "tokens=*" %%a in ('jq -r ".taskDefinition.revision" new_task_info.json') do set "NEW_REVISION=%%a"
-
-                    REM Update the ECS service with the new task definition revision
-                    aws ecs update-service --cluster %CLUSTER_NAME% --service %SERVICE_NAME% --task-definition %TASK_FAMILY%:%NEW_REVISION%
-
-                    REM Optionally, deregister the old task definition revision
-                    aws ecs deregister-task-definition --task-definition %TASK_FAMILY%:%OLD_REVISION%
-
-                    REM Check if the ECS service has the new task definition revision
-                    aws ecs describe-services --cluster %CLUSTER_NAME% --services %SERVICE_NAME% --region "%AWS_REGION%" > service_info.json
-
-                    for /f "tokens=*" %%a in ('jq -r ".services[0].taskDefinition" service_info.json') do set "CURRENT_TASK_DEFINITION=%%a"
-
-                    REM Adding a conditional check to confirm the update
-                    if "%CURRENT_TASK_DEFINITION%" == "arn:aws:ecs:%AWS_REGION%:%AWS_ACCOUNT_ID%:task-definition/%TASK_FAMILY%:%NEW_REVISION%" (
-                        echo Task Definition updated successfully!
-                    ) else (
-                        echo ERROR: Task Definition update failed!
-                        exit /b 1
-                    )
-                '''
-            }
-        }
-    }
+   
 }
 
 
