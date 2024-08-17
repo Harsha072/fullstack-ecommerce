@@ -96,45 +96,21 @@ pipeline {
             }
 
         }
-        stage("Update ECS Service") {
-    environment {
-        TASK_FAMILY = "backend-api-backup"
-        ECR_IMAGE = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
-        SERVICE_NAME = "springboot-api-service"
-    }            
-    steps {
-        withAWS(credentials: "aws-credentials", region: "us-east-1") {
-            script {
-                // Save the task definition JSON to a file
-                bat '''
-                aws ecs describe-task-definition --task-definition "%TASK_FAMILY%" --region %AWS_DEFAULT_REGION% > task_definition.json
-                '''
 
-                // Extract the old revision from the task definition JSON
-                def oldRevision = bat(script: 'for /f "tokens=*" %%i in (\'type task_definition.json ^| jq ".taskDefinition.revision"\') do @echo %%i', returnStdout: true).trim()
-                echo "Old Revision: ${oldRevision}"
-
-                // Create a new task definition JSON with updated image
-                def newTaskDefinition = bat(script: 'for /f "tokens=*" %%i in (\'type task_definition.json ^| jq --arg IMAGE "%ECR_IMAGE%" ".taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)"\') do @echo %%i', returnStdout: true).trim()
-                echo "New Task Definition: ${newTaskDefinition}"
-
-                // Register the new task definition
-                def newTaskInfo = bat(script: 'aws ecs register-task-definition --region %AWS_DEFAULT_REGION% --cli-input-json "%newTaskDefinition%"', returnStdout: true).trim()
-                echo "New Task Info: ${newTaskInfo}"
-
-                // Extract the new revision from the registration output
-                def newRevision = bat(script: 'echo %newTaskInfo% ^| jq ".taskDefinition.revision"', returnStdout: true).trim()
-                echo "New Revision: ${newRevision}"
-
-                // Update the ECS service
-                bat "aws ecs update-service --cluster %clusterName% --service %SERVICE_NAME% --task-definition %TASK_FAMILY%:%newRevision%"
-
-                // Deregister the old task definition
-                bat "aws ecs deregister-task-definition --task-definition %TASK_FAMILY%:%oldRevision%"
+ stage('Deploy to CloudFormation') {
+            steps {
+                script {
+                    def imageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
+                    
+                    def deployStatus = bat(script: "aws cloudformation deploy --template-file template.yml --stack-name ecommerce --parameter-overrides DockerImageURI=${imageUri} --region %awsRegion%", returnStatus: true)
+                    if (deployStatus != 0) {
+                        error 'Failed to deploy CloudFormation stack.'
+                    }
+                    
+                    echo 'CloudFormation stack updated successfully.'
+                }
             }
         }
-    }
-}
 
     }
 
