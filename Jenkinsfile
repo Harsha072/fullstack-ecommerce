@@ -149,6 +149,7 @@ pipeline {
                     }
                 }
             }
+
         }
         //here
         stage('Update ECS Service') {
@@ -174,9 +175,8 @@ pipeline {
                         bat "aws ecs update-service --cluster your-cluster-name --service your-service-name --task-definition springboot-api-task:%newRevision% --force-new-deployment"
                     }
                 }
-            }
 
-
+        }
     }
 
     post {
