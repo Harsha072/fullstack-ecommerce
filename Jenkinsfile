@@ -123,18 +123,25 @@ pipeline {
         */
         stage('Fetch Latest Docker Image') {
             steps {
-                script {
-                    withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
-                        // Fetch the latest image tag from ECR
-                        def latestImageTag = bat(script: 'aws ecr describe-images --repository-name spring-boot-ecommerce --query "imageDetails | sort_by(@, &imagePushedAt) | [-1].imageTags[0]" --output text', returnStdout: true).trim()
+               script {
+    withAWS(credentials: 'aws-credentials', region: 'us-east-1') {
+        // Fetch the latest image tag from ECR
+        def latestImageTag = bat(script: 'aws ecr describe-images --repository-name spring-boot-ecommerce --query "imageDetails | sort_by(@, &imagePushedAt) | [-1].imageTags[0]" --output text', returnStdout: true).trim()
 
-                        // Construct the image URI
-                        def imageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:${latestImageTag}"
+        // Ensure there's no extra whitespace in the tag
+        latestImageTag = latestImageTag.replaceAll("\\s", "")
 
-                        // Deploy CloudFormation stack with the latest image URI
-                        bat "aws cloudformation deploy --template-file template.yml --stack-name my-stack --capabilities CAPABILITY_IAM --parameter-overrides DockerImageURI=${imageUri}"
-                    }
-                }
+        // Construct the image URI
+        def imageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:${latestImageTag}"
+        
+        // Log the image URI for debugging
+        echo "Deploying with DockerImageURI=${imageUri}"
+
+        // Deploy CloudFormation stack with the latest image URI
+        bat(script: "aws cloudformation deploy --template-file template.yml --stack-name my-stack --capabilities CAPABILITY_IAM --parameter-overrides DockerImageURI=${imageUri}")
+    }
+}
+
             }
         }
     }
