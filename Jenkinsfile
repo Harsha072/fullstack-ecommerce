@@ -151,7 +151,7 @@ pipeline {
             }
         }
         //here
-         stage('Update ECS Service') {
+        stage('Update ECS Service') {
     environment {
         TASK_FAMILY = "springboot-api-task"
         ECR_IMAGE = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
@@ -167,16 +167,16 @@ pipeline {
                     aws ecs describe-task-definition --task-definition "%TASK_FAMILY%" --region "%AWS_REGION%" > task_definition.json
 
                     REM Extract the old revision
-                    for /f "tokens=*" %%a in ('type task_definition.json ^| jq ".taskDefinition.revision"') do set "OLD_REVISION=%%a"
+                    for /f "tokens=*" %%a in ('jq -r ".taskDefinition.revision" task_definition.json') do set "OLD_REVISION=%%a"
 
                     REM Update the task definition with the new image
-                    for /f "tokens=*" %%a in ('type task_definition.json ^| jq --arg IMAGE "%ECR_IMAGE%" ".taskDefinition ^| .containerDefinitions[0].image = $IMAGE ^| del(.taskDefinitionArn) ^| del(.revision) ^| del(.status) ^| del(.requiresAttributes) ^| del(.compatibilities) ^| del(.registeredAt) ^| del(.registeredBy)"') do echo %%a > new_task_definition.json
+                    jq --arg IMAGE "%ECR_IMAGE%" '.taskDefinition.containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' task_definition.json > new_task_definition.json
 
                     REM Register the new task definition
                     aws ecs register-task-definition --region "%AWS_REGION%" --cli-input-json file://new_task_definition.json > new_task_info.json
 
                     REM Extract the new revision number
-                    for /f "tokens=*" %%a in ('type new_task_info.json ^| jq ".taskDefinition.revision"') do set "NEW_REVISION=%%a"
+                    for /f "tokens=*" %%a in ('jq -r ".taskDefinition.revision" new_task_info.json') do set "NEW_REVISION=%%a"
 
                     REM Update the ECS service with the new task definition revision
                     aws ecs update-service --cluster %CLUSTER_NAME% --service %SERVICE_NAME% --task-definition %TASK_FAMILY%:%NEW_REVISION%
@@ -186,10 +186,11 @@ pipeline {
 
                     REM Check if the ECS service has the new task definition revision
                     aws ecs describe-services --cluster %CLUSTER_NAME% --services %SERVICE_NAME% --region "%AWS_REGION%" > service_info.json
-                    for /f "tokens=*" %%a in ('type service_info.json ^| jq ".services[0].taskDefinition"') do set "CURRENT_TASK_DEFINITION=%%a"
+
+                    for /f "tokens=*" %%a in ('jq -r ".services[0].taskDefinition" service_info.json') do set "CURRENT_TASK_DEFINITION=%%a"
 
                     REM Adding a conditional check to confirm the update
-                    if "%CURRENT_TASK_DEFINITION%"=="arn:aws:ecs:%AWS_REGION%:%AWS_ACCOUNT_ID%:task-definition/%TASK_FAMILY%:%NEW_REVISION%" (
+                    if "%CURRENT_TASK_DEFINITION%" == "arn:aws:ecs:%AWS_REGION%:%AWS_ACCOUNT_ID%:task-definition/%TASK_FAMILY%:%NEW_REVISION%" (
                         echo Task Definition updated successfully!
                     ) else (
                         echo ERROR: Task Definition update failed!
@@ -200,6 +201,7 @@ pipeline {
         }
     }
 }
+
 
     }
 
