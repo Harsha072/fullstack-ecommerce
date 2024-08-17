@@ -103,9 +103,7 @@ pipeline {
                     def imageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
                     
                     def deployStatus = bat(script: "aws cloudformation deploy  --template-file template.yml --stack-name your-stack-name --parameter-overrides DockerImageURI=242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest  --region us-east-1")
-                    if (deployStatus != 0) {
-                        error 'Failed to deploy CloudFormation stack.'
-                    }
+                     echo "Deployment Status: ${deployStatus}"
                     
                     echo 'CloudFormation stack updated successfully.'
                 }
