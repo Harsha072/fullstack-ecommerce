@@ -26,6 +26,23 @@ pipeline {
                 }
             }
         }
+        // stage('Install Dependencies') {
+        //     steps {
+        //         dir('frontend/angular-ecommerce') {
+        //             bat 'echo Installing Node.js dependencies...'
+        //             bat 'npm install'
+        //         }
+        //     }
+        // }
+        
+        // stage('Run Tests') {
+        //     steps {
+        //         dir('frontend/angular-ecommerce') {
+        //             bat 'echo Running tests...'
+        //             bat 'npm run test:ci'
+        //         }
+        //     }
+        // }
         stage('Install Dependencies - Maven') {
             steps {
                 dir('backend/spring-boot-ecommerce') {
