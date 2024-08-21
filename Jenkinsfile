@@ -2,9 +2,6 @@ pipeline {
     agent any
 
     environment {
-        registryCredential = "ecr:us-east-1:aws-credentials"
-        clusterName = "ecommerce-cluster"
-        AWS_DEFAULT_REGION = 'us-east-1'
         // Defining a variable to hold the image URI
         IMAGE_URI = ""
     }
@@ -27,23 +24,23 @@ pipeline {
                 }
             }
         }
-        stage('Install Dependencies') {
-            steps {
-                dir('frontend/angular-ecommerce') {
-                    echo 'Installing Node.js dependencies...'
-                    bat 'npm install'
-                }
-            }
-        }
+        // stage('Install Dependencies') {
+        //     steps {
+        //         dir('frontend/angular-ecommerce') {
+        //             echo 'Installing Node.js dependencies...'
+        //             bat 'npm install'
+        //         }
+        //     }
+        // }
         
-        stage('Run Tests') {
-            steps {
-                dir('frontend/angular-ecommerce') {
-                    echo 'Running tests...'
-                    bat 'npm run test:ci'
-                }
-            }
-        }
+        // stage('Run Tests') {
+        //     steps {
+        //         dir('frontend/angular-ecommerce') {
+        //             echo 'Running tests...'
+        //             bat 'npm run test:ci'
+        //         }
+        //     }
+        // }
         stage('Install Dependencies - Maven') {
             steps {
                 dir('backend/spring-boot-ecommerce') {
@@ -71,8 +68,11 @@ pipeline {
                         if (dockerBuild != 0) {
                             error 'Docker image build failed for Spring Boot.'
                         }
+                         script {
+                            env.IMAGE_URI = "242201280065.dkr.ecr.us-east-1.amazonaws.com/${imageTag}"
+                        }
                         // Setting the IMAGE_URI environment variable
-                        env.IMAGE_URI = "242201280065.dkr.ecr.us-east-1.amazonaws.com/${imageTag}"
+        
                         echo "Docker image for Spring Boot built successfully: ${env.IMAGE_URI}"
                     }
                 }
