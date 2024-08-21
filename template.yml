@@ -5,6 +5,9 @@ Parameters:
   DockerImageURI:
     Type: String
     Description: The URI of the Docker image to be used in the task definition.
+    MyCluster:
+     Type: String
+     Description: The URI of the Docker image to be used in the task definition.
 
 Resources:
 
@@ -19,9 +22,15 @@ Resources:
           Cpu: 256
           Essential: true
 
-
+  MyService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref MyCluster  # Your ECS cluster reference
+      TaskDefinition: !Ref MyTaskDefinition
+      DesiredCount: 1
+      LaunchType: FARGATE_SPOT
+      # Additional properties like LoadBalancer, etc.
 
 Outputs:
   TaskDefinitionArn:
     Value: !Ref MyTaskDefinition
- 
