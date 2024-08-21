@@ -5,6 +5,8 @@ pipeline {
         registryCredential = "ecr:us-east-1:aws-credentials"
         clusterName = "ecommerce-cluster"
         AWS_DEFAULT_REGION = 'us-east-1'
+        // Defining a variable to hold the image URI
+        IMAGE_URI = ""
     }
 
     stages {
@@ -64,11 +66,14 @@ pipeline {
                     echo 'Building Docker image for Spring Boot...'
                     script {
                         def imageName = 'spring-boot-ecommerce'
-                        def dockerBuild = bat(script: "docker build -t ${imageName}:${env.BUILD_NUMBER} -t ${imageName}:latest .", returnStatus: true)
+                        def imageTag = "${imageName}:${env.BUILD_NUMBER}"
+                        def dockerBuild = bat(script: "docker build -t ${imageTag} -t ${imageName}:latest .", returnStatus: true)
                         if (dockerBuild != 0) {
                             error 'Docker image build failed for Spring Boot.'
                         }
-                        echo 'Docker image for Spring Boot built successfully.'
+                        // Setting the IMAGE_URI environment variable
+                        env.IMAGE_URI = "242201280065.dkr.ecr.us-east-1.amazonaws.com/${imageTag}"
+                        echo "Docker image for Spring Boot built successfully: ${env.IMAGE_URI}"
                     }
                 }
             }
@@ -88,42 +93,33 @@ pipeline {
                             error 'Failed to login to AWS ECR. Please check your credentials and region.'
                         }
 
-                        def springBootTag = bat(script: 'docker tag spring-boot-ecommerce:latest 242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest', returnStatus: true)
+                        def springBootTag = bat(script: "docker tag ${env.IMAGE_URI} ${env.IMAGE_URI}", returnStatus: true)
                         if (springBootTag != 0) {
                             error 'Failed to tag Docker image for Spring Boot.'
                         }
-                        def springBootPush = bat(script: 'docker push 242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest', returnStatus: true)
+                        def springBootPush = bat(script: "docker push ${env.IMAGE_URI}", returnStatus: true)
                         if (springBootPush != 0) {
                             error 'Failed to push Docker image for Spring Boot.'
                         }
 
-                        def angularTag = bat(script: 'docker tag angular-ecommerce:latest 242201280065.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest', returnStatus: true)
-                        if (angularTag != 0) {
-                            error 'Failed to tag Docker image for Angular.'
-                        }
-                        def angularPush = bat(script: 'docker push 242201280065.dkr.ecr.us-east-1.amazonaws.com/angular-ecommerce:latest', returnStatus: true)
-                        if (angularPush != 0) {
-                            error 'Failed to push Docker image for Angular.'
-                        }
-
-                        echo 'Docker images pushed to ECR successfully.'
+                        echo 'Docker image pushed to ECR successfully.'
                     }
                 }
             }
         }
 
-        // stage('Deploy to CloudFormation') {
-        //     steps {
-        //         script {
-        //             def imageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
-                    
-        //             def deployStatus = bat(script: "aws cloudformation deploy --template-file template.yml --stack-name your-stack-name --parameter-overrides DockerImageURI=${imageUri} --region us-east-1", returnStatus: true)
-        //             echo "Deployment Status: ${deployStatus}"
-                    
-        //             echo 'CloudFormation stack updated successfully.'
-        //         }
-        //     }
-        // }
+        stage('Deploy to CloudFormation') {
+            steps {
+                script {
+                    // Using the IMAGE_URI variable in CloudFormation deployment
+                    def deployStatus = bat(script: "aws cloudformation deploy --template-file template.yml --stack-name your-stack-name --parameter-overrides DockerImageURI=${env.IMAGE_URI} --region us-east-1", returnStatus: true)
+                    if (deployStatus != 0) {
+                        error "CloudFormation deployment failed: ${deployStatus}"
+                    }
+                    echo 'CloudFormation stack updated successfully.'
+                }
+            }
+        }
     }
 
     post {
