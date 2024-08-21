@@ -1,11 +1,7 @@
 pipeline {
     agent any
 
-    environment {
-        registryCredential = "ecr:us-east-1:aws-credentials"
-        clusterName = "ecommerce-cluster"
-        AWS_DEFAULT_REGION = 'us-east-1'
-    }
+    
 
     stages {
         stage('Checkout') {
