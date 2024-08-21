@@ -5,7 +5,7 @@ Parameters:
   DockerImageURI:
     Type: String
     Description: The URI of the Docker image to be used in the task definition.
-    MyCluster:
+  MyCluster:
      Type: String
      Description: The URI of the Docker image to be used in the task definition.
 
