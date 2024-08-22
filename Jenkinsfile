@@ -104,17 +104,17 @@ pipeline {
 
             // Update the task definition using jq
             bat '''
-                jq --arg IMAGE "%newImageUri%" \
-                   ".taskDefinition.containerDefinitions[0].image = \$IMAGE |
-                    del(.taskDefinition.taskDefinitionArn) |
-                    del(.taskDefinition.revision) |
-                    del(.taskDefinition.status) |
-                    del(.taskDefinition.requiresAttributes) |
-                    del(.taskDefinition.compatibilities) |
-                    del(.taskDefinition.registeredAt) |
-                    del(.taskDefinition.registeredBy)" \
-                   task-def.json > updated-task-def.json
-            '''
+    jq --arg IMAGE "%newImageUri%" ^
+       ".taskDefinition.containerDefinitions[0].image = \\$IMAGE |
+        del(.taskDefinition.taskDefinitionArn) |
+        del(.taskDefinition.revision) |
+        del(.taskDefinition.status) |
+        del(.taskDefinition.requiresAttributes) |
+        del(.taskDefinition.compatibilities) |
+        del(.taskDefinition.registeredAt) |
+        del(.taskDefinition.registeredBy)" ^
+       task-def.json > updated-task-def.json
+'''
 
             // Print out the updated JSON file for debugging
             bat 'type updated-task-def.json'
