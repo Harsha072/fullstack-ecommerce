@@ -105,7 +105,7 @@ pipeline {
             // Update the task definition using jq
             bat '''
     jq --arg IMAGE "%newImageUri%" ^
-       ".taskDefinition.containerDefinitions[0].image = \\$IMAGE |
+       ".taskDefinition.containerDefinitions[0].image = $IMAGE |
         del(.taskDefinition.taskDefinitionArn) |
         del(.taskDefinition.revision) |
         del(.taskDefinition.status) |
