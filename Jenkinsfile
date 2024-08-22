@@ -90,45 +90,44 @@ pipeline {
             }
         }
 
-          stage('Update Task Definition and Register New Revision') {
+         stage('Update Task Definition and Register New Revision') {
     steps {
         script {
-            def taskDefinitionName = 'my-task-family' // Replace with your task definition name
+            def taskDefinitionName = 'my-task-family'
             def newImageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
 
-            // Step 2: Get the existing task definition
-            def taskDefJson = bat(script: "aws ecs describe-task-definition --task-definition ${taskDefinitionName} --region us-east-1", returnStdout: true).trim()
+            // Step 1: Get the existing task definition from AWS CLI
+            def taskDefJson = bat(script: """
+                aws ecs describe-task-definition --task-definition ${taskDefinitionName} --region us-east-1 --output json
+            """, returnStdout: true).trim()
 
-            // Save the JSON to a file
-            writeFile file: 'task-def.json', text: taskDefJson
+            // Step 2: Modify the JSON string
+            def updatedTaskDefJson = taskDefJson
+                .replaceFirst(/("image":\s*")[^"]+/, "\$1${newImageUri}")
+                .replaceAll(/"taskDefinitionArn":\s*"[^"]+",?/, '')
+                .replaceAll(/"revision":\s*\d+,?/, '')
+                .replaceAll(/"status":\s*"[^"]+",?/, '')
+                .replaceAll(/"requiresAttributes":\s*\[[^\]]*\],?/, '')
+                .replaceAll(/"compatibilities":\s*\[[^\]]*\],?/, '')
+                .replaceAll(/"registeredAt":\s*"[^"]+",?/, '')
+                .replaceAll(/"registeredBy":\s*"[^"]+",?/, '')
 
-            // Update the task definition using jq
-            bat '''
-    jq --arg IMAGE "${newImageUri}" ^
- ".taskDefinition.containerDefinitions[0].image = \$IMAGE |
-        del(.taskDefinition.taskDefinitionArn) |
-        del(.taskDefinition.revision) |
-        del(.taskDefinition.status) |
-        del(.taskDefinition.requiresAttributes) |
-        del(.taskDefinition.compatibilities) |
-        del(.taskDefinition.registeredAt) |
-        del(.taskDefinition.registeredBy)" ^
-       task-def.json > updated-task-def.json
-'''
+            // Print out the updated JSON for debugging
+            echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
 
-            // Print out the updated JSON file for debugging
-            bat 'type updated-task-def.json'
-
-            // Register the new task definition revision
-            // def registerStatus = bat(script: "aws ecs register-task-definition --cli-input-json file://updated-task-def.json --region us-east-1", returnStatus: true)
-            // if (registerStatus != 0) {
-            //     error 'Failed to register the new task definition revision.'
-            // }
+            // Step 3: Register the updated task definition
+            def registerStatus = bat(script: """
+                aws ecs register-task-definition --cli-input-json '${updatedTaskDefJson}' --region us-east-1
+            """, returnStatus: true)
+            if (registerStatus != 0) {
+                error 'Failed to register the new task definition revision.'
+            }
 
             echo 'Successfully registered the new task definition revision.'
         }
     }
 }
+
     }
 
     post {
