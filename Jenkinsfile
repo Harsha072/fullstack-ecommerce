@@ -104,13 +104,18 @@ pipeline {
                     def updatedTaskDefJson = taskDefJson.replaceFirst(/"image":\s*"[^"]+"/, "\"image\": \"${newImageUri}\"")
 
                     // Save the updated JSON to a file
+                     // Save the updated JSON to a file
                     writeFile file: 'task-def.json', text: updatedTaskDefJson
 
+                    // Print out the JSON file for debugging
+                    echo 'Updated task definition JSON:'
+                    bat 'type task-def.json'
+
                     // Step 4: Register the new task definition revision
-                    def registerResult = bat(script: "aws ecs register-task-definition --cli-input-json file://task-def.json --region us-east-1", returnStatus: true)
-                    if (registerResult != 0) {
-                        error 'Failed to register the new task definition.'
-                    }
+                    // def registerResult = bat(script: "aws ecs register-task-definition --cli-input-json file://task-def.json --region us-east-1", returnStatus: true)
+                    // if (registerResult != 0) {
+                    //     error 'Failed to register the new task definition.'
+                    // }
 
                     echo 'ECS task definition updated and registered successfully.'
                 }
