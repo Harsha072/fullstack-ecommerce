@@ -90,18 +90,29 @@ pipeline {
             }
         }
 
-        stage('Deploy to CloudFormation') {
+        stage('Update ECS Task Definition') {
             steps {
+                echo 'Updating ECS task definition with new Docker image...'
                 script {
-                    def imageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
-                    def clusterName = "ecommerce-cluster"
+                    def taskDefinitionName = 'my-task-family' // Replace with your task definition name
+                    def newImageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
+
+                    // Step 2: Get the existing task definition
+                    def taskDefJson = bat(script: "aws ecs describe-task-definition --task-definition ${taskDefinitionName} --region us-east-1", returnStdout: true).trim()
                     
-                    def deployStatus = bat(script: "aws cloudformation deploy --template-file template.yml --stack-name your-stack-name --parameter-overrides DockerImageURI=${imageUri} MyCluster=${clusterName} --region us-east-1", returnStatus: true)
-                    if (deployStatus != 0) {
-                        error 'CloudFormation deployment failed.'
+                    // Step 3: Update the task definition with the new Docker image
+                    def updatedTaskDefJson = taskDefJson.replaceFirst(/"image":\s*"[^"]+"/, "\"image\": \"${newImageUri}\"")
+
+                    // Save the updated JSON to a file
+                    writeFile file: 'task-def.json', text: updatedTaskDefJson
+
+                    // Step 4: Register the new task definition revision
+                    def registerResult = bat(script: "aws ecs register-task-definition --cli-input-json file://task-def.json --region us-east-1", returnStatus: true)
+                    if (registerResult != 0) {
+                        error 'Failed to register the new task definition.'
                     }
 
-                    echo 'CloudFormation stack updated successfully.'
+                    echo 'ECS task definition updated and registered successfully.'
                 }
             }
         }
