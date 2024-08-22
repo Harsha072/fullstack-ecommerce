@@ -93,7 +93,7 @@ pipeline {
          stage('Update Task Definition and Register New Revision') {
     steps {
         script {
-            def taskDefinitionName = 'my-task-family'
+            def taskDefinitionName = 'backend-api-backup'
             def newImageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
 
             // Step 1: Get the existing task definition from AWS CLI
