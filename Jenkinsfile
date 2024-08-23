@@ -104,7 +104,10 @@ pipeline {
                     writeFile file: 'task-def.json', text: taskDefJson
                     // Run jq to manipulate JSON
                     bat '''
-                        jq ".taskDefinition.containerDefinitions[0].image = \\"${newImageUri}\\" |
+                    @echo off
+                    setlocal
+                    set newImageUri=242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest
+                    jq ".taskDefinition.containerDefinitions[0].image = \\"%newImageUri%\\" |
                         del(.taskDefinitionArn) |
                         del(.revision) |
                         del(.status) |
@@ -112,7 +115,8 @@ pipeline {
                         del(.compatibilities) |
                         del(.registeredAt) |
                         del(.registeredBy)" task-def.json > updated-task-def.json
-                    '''
+                    endlocal
+                '''
 
                     // Load and print the updated JSON
                     def updatedTaskDefJson = readFile('updated-task-def.json')
