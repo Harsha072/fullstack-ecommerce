@@ -102,7 +102,6 @@ pipeline {
 
                     // Save JSON to a file
                     writeFile file: 'task-def.json', text: taskDefJson
-
                     // Run jq to manipulate JSON
                     bat '''
                         jq ".taskDefinition.containerDefinitions[0].image = \\"${newImageUri}\\" |
