@@ -89,7 +89,7 @@ pipeline {
                 }
             }
         }
-stages {
+
         stage('Update Task Definition and Register New Revision') {
             steps {
                 script {
@@ -100,19 +100,16 @@ stages {
                     writeFile file: 'task-def.json', text: taskDefJson
 
                     // Set the environment variable and use jq to modify the JSON
-                    bat '''
-                        set newImageUri=242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest
-jq ".taskDefinition.containerDefinitions[0].image = \"%newImageUri%\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json
-'''
+                    bat '''set newImageUri=242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest jq ".taskDefinition.containerDefinitions[0].image = \"%newImageUri%\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json'''
 
                     // Register the updated task definition with AWS ECS
-                    def registerStatus = bat(script: """
-                        aws ecs register-task-definition --cli-input-json file://updated-task-def.json
-                    """, returnStatus: true)
+                    // def registerStatus = bat(script: """
+                    //     aws ecs register-task-definition --cli-input-json file://updated-task-def.json
+                    // """, returnStatus: true)
 
-                    if (registerStatus != 0) {
-                        error 'Failed to register the new task definition revision.'
-                    }
+                    // if (registerStatus != 0) {
+                    //     error 'Failed to register the new task definition revision.'
+                    // }
 
                     echo 'Successfully registered the new task definition revision.'
                 }
@@ -120,7 +117,7 @@ jq ".taskDefinition.containerDefinitions[0].image = \"%newImageUri%\" | del(.tas
         }
     }
 
-    }
+    
 
     post {
         success {
