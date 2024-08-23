@@ -89,120 +89,36 @@ pipeline {
                 }
             }
         }
+stages {
+        stage('Update Task Definition and Register New Revision') {
+            steps {
+                script {
+                    def taskDefinitionName = 'backend-api-backup'
+                    def newImageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
 
-         stage('Update Task Definition and Register New Revision') {
-    steps {
-        script {
-            def taskDefinitionName = 'backend-api-backup'
-            def newImageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
-            // Example: Set task definition JSON as a Groovy variable
-                    def taskDefJson = bat(script: '''
-                        aws ecs describe-task-definition --task-definition my-task-family --region us-east-1 --output json
-                    ''', returnStdout: true).trim()
-
-                    // Save JSON to a file
+                    // Write the task definition JSON to a file (assuming taskDefJson contains the original JSON)
                     writeFile file: 'task-def.json', text: taskDefJson
-                    // Run jq to manipulate JSON
+
+                    // Set the environment variable and use jq to modify the JSON
                     bat '''
-                    @echo off
-                    setlocal
-                    set newImageUri=242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest
-                    jq ".taskDefinition.containerDefinitions[0].image = \"%newImageUri%\" |
-                        del(.taskDefinitionArn) |
-                        del(.revision) |
-                        del(.status) |
-                        del(.requiresAttributes) |
-                        del(.compatibilities) |
-                        del(.registeredAt) |
-                        del(.registeredBy)" task-def.json > updated-task-def.json
-                    endlocal
-                '''
+                        set newImageUri=242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest
+jq ".taskDefinition.containerDefinitions[0].image = \"%newImageUri%\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json
+'''
 
-                    // Load and print the updated JSON
-                    def updatedTaskDefJson = readFile('updated-task-def.json')
-                    echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
+                    // Register the updated task definition with AWS ECS
+                    def registerStatus = bat(script: """
+                        aws ecs register-task-definition --cli-input-json file://updated-task-def.json
+                    """, returnStatus: true)
 
+                    if (registerStatus != 0) {
+                        error 'Failed to register the new task definition revision.'
+                    }
 
-            // Step 3: Register the updated task definition
-//             def registerStatus = bat(script: """
-//                aws ecs register-task-definition --cli-input-json '{
-//     "containerDefinitions": [
-//         {
-//             "name": "springboot-ecommerce",
-//             "image": "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest",
-//             "cpu": 0,
-//             "portMappings": [
-//                 {
-//                     "containerPort": 8080,
-//                     "hostPort": 8080,
-//                     "protocol": "tcp",
-//                     "name": "springboot-ecommerce-8080-tcp",
-//                     "appProtocol": "http"
-//                 }
-//             ],
-//             "essential": true,
-//             "environment": [
-//                 {
-//                     "name": "MYSQL_PASSWORD",
-//                     "value": "fullstackecommerce"
-//                 },
-//                 {
-//                     "name": "MYSQL_PORT",
-//                     "value": "3306"
-//                 },
-//                 {
-//                     "name": "MYSQL_HOST",
-//                     "value": "travel-buddy-db.c3q0iisses9y.us-east-1.rds.amazonaws.com"
-//                 },
-//                 {
-//                     "name": "MYSQL_USER",
-//                     "value": "root"
-//                 }
-//             ],
-//             "environmentFiles": [],
-//             "mountPoints": [],
-//             "volumesFrom": [],
-//             "ulimits": [],
-//             "logConfiguration": {
-//                 "logDriver": "awslogs",
-//                 "options": {
-//                     "awslogs-group": "/ecs/backend-api",
-//                     "mode": "non-blocking",
-//                     "awslogs-create-group": "true",
-//                     "max-buffer-size": "25m",
-//                     "awslogs-region": "us-east-1",
-//                     "awslogs-stream-prefix": "ecs"
-//                 },
-//                 "secretOptions": []
-//             },
-//             "systemControls": []
-//         }
-//     ],
-//     "family": "backend-api-backup",
-//     "executionRoleArn": "arn:aws:iam::242201280065:role/ecsTaskExecutionRole",
-//     "networkMode": "awsvpc",
-//     "volumes": [],
-//     "placementConstraints": [],
-//     "runtimePlatform": {
-//         "cpuArchitecture": "X86_64",
-//         "operatingSystemFamily": "LINUX"
-//     },
-//     "requiresCompatibilities": [
-//         "FARGATE"
-//     ],
-//     "cpu": "1024",
-//     "memory": "3072",
-//     "tags": []
-// }'
-//             """, returnStatus: true)
-//             if (registerStatus != 0) {
-//                 error 'Failed to register the new task definition revision.'
-//             }
-
-            echo 'Successfully registered the new task definition revision.'
+                    echo 'Successfully registered the new task definition revision.'
+                }
+            }
         }
     }
-}
 
     }
 
