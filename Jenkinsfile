@@ -128,7 +128,75 @@ echo "Clean Task Definition JSON:\n${taskDefJson}"
 
             // Step 3: Register the updated task definition
             def registerStatus = bat(script: """
-                aws ecs register-task-definition --cli-input-json '${updatedTaskDefJson}' --region us-east-1
+               aws ecs register-task-definition --cli-input-json '{
+    "containerDefinitions": [
+        {
+            "name": "springboot-ecommerce",
+            "image": "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest",
+            "cpu": 0,
+            "portMappings": [
+                {
+                    "containerPort": 8080,
+                    "hostPort": 8080,
+                    "protocol": "tcp",
+                    "name": "springboot-ecommerce-8080-tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "MYSQL_PASSWORD",
+                    "value": "fullstackecommerce"
+                },
+                {
+                    "name": "MYSQL_PORT",
+                    "value": "3306"
+                },
+                {
+                    "name": "MYSQL_HOST",
+                    "value": "travel-buddy-db.c3q0iisses9y.us-east-1.rds.amazonaws.com"
+                },
+                {
+                    "name": "MYSQL_USER",
+                    "value": "root"
+                }
+            ],
+            "environmentFiles": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "ulimits": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/backend-api",
+                    "mode": "non-blocking",
+                    "awslogs-create-group": "true",
+                    "max-buffer-size": "25m",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            },
+            "systemControls": []
+        }
+    ],
+    "family": "backend-api-backup",
+    "executionRoleArn": "arn:aws:iam::242201280065:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "volumes": [],
+    "placementConstraints": [],
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    },
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "1024",
+    "memory": "3072",
+    "tags": []
+}'
             """, returnStatus: true)
             if (registerStatus != 0) {
                 error 'Failed to register the new task definition revision.'
