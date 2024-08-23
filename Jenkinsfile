@@ -107,7 +107,7 @@ pipeline {
                     @echo off
                     setlocal
                     set newImageUri=242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest
-                    jq ".taskDefinition.containerDefinitions[0].image = \\"%newImageUri%\\" |
+                    jq ".taskDefinition.containerDefinitions[0].image = \"%newImageUri%\" |
                         del(.taskDefinitionArn) |
                         del(.revision) |
                         del(.status) |
