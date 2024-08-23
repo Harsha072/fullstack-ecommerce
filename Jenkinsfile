@@ -105,14 +105,14 @@ pipeline {
 
                     // Run jq to manipulate JSON
                     bat '''
-                        jq ".taskDefinition.containerDefinitions[0].image = \"${newImageUri}\" |
-                            del(.taskDefinitionArn) |
-                            del(.revision) |
-                            del(.status) |
-                            del(.requiresAttributes) |
-                            del(.compatibilities) |
-                            del(.registeredAt) |
-                            del(.registeredBy)" task-def.json > updated-task-def.json
+                        jq ".taskDefinition.containerDefinitions[0].image = \\"${newImageUri}\\" |
+                        del(.taskDefinitionArn) |
+                        del(.revision) |
+                        del(.status) |
+                        del(.requiresAttributes) |
+                        del(.compatibilities) |
+                        del(.registeredAt) |
+                        del(.registeredBy)" task-def.json > updated-task-def.json
                     '''
 
                     // Load and print the updated JSON
