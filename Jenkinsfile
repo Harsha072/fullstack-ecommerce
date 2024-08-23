@@ -101,9 +101,7 @@ pipeline {
                 script {
                     def taskDefinitionName = 'backend-api-backup'
                     def newImageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
-                    def taskDefJson = bat(script:"
-                        aws ecs describe-task-definition --task-definition ${env.TASK_DEF_NAME} --region us-east-1 --output json
-                    ", returnStdout: true).trim()
+                    def taskDefJson = bat(script:"aws ecs describe-task-definition --task-definition ${env.TASK_DEF_NAME} --region us-east-1 --output json", returnStdout: true).trim()
 
                     // Save JSON to a file
                     // writeFile file: 'task.json', text: taskDefJson
