@@ -109,20 +109,20 @@ pipeline {
 def jsonStart = rawOutput.indexOf("{")
 def taskDefJson = rawOutput.substring(jsonStart)
 
-echo "Clean Task Definition JSON:\n${taskDefJson}"  
+def updatedTaskDefJson = taskDefJson
+    .replaceFirst(/^{\s*"taskDefinition":\s*{/, '{')  // Replace the opening "taskDefinition" wrapper
+    .replaceFirst(/}\s*$/, '}')  // Remove the closing bracket of the "taskDefinition" wrapper
+    .replaceAll(/"taskDefinitionArn":\s*"[^"]+",?/, '')  // Other replacements as needed
+    .replaceAll(/"revision":\s*\d+,?/, '')
+    .replaceAll(/"status":\s*"[^"]+",?/, '')
+    .replaceAll(/"requiresAttributes":\s*\[[^\]]*\],?/, '')
+    .replaceAll(/"compatibilities":\s*\[[^\]]*\],?/, '')
+    .replaceAll(/"registeredAt":\s*"[^"]+",?/, '')
+    .replaceAll(/"registeredBy":\s*"[^"]+",?/, '')
 
-            //Step 2: Modify the JSON string
-            def updatedTaskDefJson = taskDefJson
-                .replaceFirst(/("image":\s*")[^"]+/, "\$1${newImageUri}")
-                 .replaceFirst(/^{\s*"taskDefinition":\s*{/, '{')  // Replace the opening "taskDefinition" wrapper
-                  .replaceFirst(/}\s*$/, '}')  // Remove the closing bracket of the "taskDefinition" wrapper
-                 .replaceAll(/"taskDefinitionArn":\s*"[^"]+",?/, '')  // Other replacements as needed
-                 .replaceAll(/"revision":\s*\d+,?/, '')
-               .replaceAll(/"status":\s*"[^"]+",?/, '')
-                .replaceAll(/"requiresAttributes":\s*\[[^\]]*\],?/, '')
-                 .replaceAll(/"compatibilities":\s*\[[^\]]*\],?/, '')
-             .replaceAll(/"registeredAt":\s*"[^"]+",?/, '')
-                .replaceAll(/"registeredBy":\s*"[^"]+",?/, '')
+// Print out the updated JSON for debugging
+echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
+
 
             // Print out the updated JSON for debugging
             echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
