@@ -1,6 +1,9 @@
 pipeline {
     agent any
-
+    environment{
+        dockerBuild=''
+        imageName='spring-boot-ecommerce'
+    }
     stages {
         stage('Checkout') {
             steps {
@@ -41,12 +44,12 @@ pipeline {
                 dir('backend\\spring-boot-ecommerce') {
                     echo 'Building Docker image for Spring Boot...'
                     script {
-                        def imageName = 'spring-boot-ecommerce'
-                        def dockerBuild = bat(script: "docker build -t ${imageName}:${env.BUILD_NUMBER} -t ${imageName}:latest .", returnStatus: true)
+                     
+                        dockerBuild = bat(script: "docker build -t ${env.imageName}:${env.BUILD_NUMBER} -t ${imageName}:latest .", returnStatus: true)
                         if (dockerBuild != 0) {
                             error 'Docker image build failed for Spring Boot.'
                         }
-                        echo 'Docker image for Spring Boot built successfully.'
+                        echo "Docker image for Spring Boot built successfully:\n${dockerBuild}"
                     }
                 }
             }
@@ -92,27 +95,24 @@ pipeline {
 
         stage('Update Task Definition and Register New Revision') {
             environment{
-                TASK_DEFINITION_NAME = 'backend-api-backup'
-                NEW_IMAGE_URI = '242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest'
-
+                TASK_DEF_NAME = 'backend-api-backup'
             }
             steps {
                 script {
-                    echo "Task Definition Name: ${env.TASK_DEFINITION_NAME}"
                     def taskDefinitionName = 'backend-api-backup'
                     def newImageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
-                    def taskDefJson = bat(script: '''
-                        aws ecs describe-task-definition --task-definition ${env.TASK_DEFINITION_NAME} --region us-east-1 --output json
-                    ''', returnStdout: true).trim()
+                    def taskDefJson = bat(script:"
+                        aws ecs describe-task-definition --task-definition ${env.TASK_DEF_NAME} --region us-east-1 --output json
+                    ", returnStdout: true).trim()
 
                     // Save JSON to a file
-                    writeFile file: 'task.json', text: taskDefJson
-                    // Write the task definition JSON to a file (assuming taskDefJson contains the original JSON)
+                    // writeFile file: 'task.json', text: taskDefJson
+                    // // Write the task definition JSON to a file (assuming taskDefJson contains the original JSON)
 
-                    // Set the environment variable and use jq to modify the JSON
-                    bat '''set newImageUri=242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest jq ".taskDefinition.containerDefinitions[0].image = \"%newImageUri%\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json'''
-                     def updatedTaskDefJson = readFile('updated-task-def.json')
-                    echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
+                    // // Set the environment variable and use jq to modify the JSON
+                    // bat '''set newImageUri=242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest jq ".taskDefinition.containerDefinitions[0].image = \"%newImageUri%\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json'''
+                    //  def updatedTaskDefJson = readFile('updated-task-def.json')
+                    // echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
                     
                     // def registerStatus = bat(script: """
                     //     aws ecs register-task-definition --cli-input-json ${updatedTaskDefJson} """, returnStatus: true)
