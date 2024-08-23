@@ -95,9 +95,13 @@ pipeline {
                 script {
                     def taskDefinitionName = 'backend-api-backup'
                     def newImageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
+                    def taskDefJson = bat(script: '''
+                        aws ecs describe-task-definition --task-definition my-task-family --region us-east-1 --output json
+                    ''', returnStdout: true).trim()
 
+                    // Save JSON to a file
+                    writeFile file: 'task.json', text: taskDefJson
                     // Write the task definition JSON to a file (assuming taskDefJson contains the original JSON)
-                    writeFile file: 'task-def.json', text: taskDefJson
 
                     // Set the environment variable and use jq to modify the JSON
                     bat '''set newImageUri=242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest jq ".taskDefinition.containerDefinitions[0].image = \"%newImageUri%\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json'''
