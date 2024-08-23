@@ -95,37 +95,29 @@ pipeline {
         script {
             def taskDefinitionName = 'backend-api-backup'
             def newImageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
+            // Example: Set task definition JSON as a Groovy variable
+                    def taskDefJson = bat(script: '''
+                        aws ecs describe-task-definition --task-definition my-task-family --region us-east-1 --output json
+                    ''', returnStdout: true).trim()
 
-            // // Step 1: Get the existing task definition from AWS CLI
-            // def taskDefJson = bat(script: """
-            //     aws ecs describe-task-definition --task-definition ${taskDefinitionName} --region us-east-1 --output json
-            // """, returnStdout: true).trim()
+                    // Save JSON to a file
+                    writeFile file: 'task-def.json', text: taskDefJson
 
-         def rawOutput = bat(script: """
-    aws ecs describe-task-definition --task-definition ${taskDefinitionName} --region us-east-1 --output json
-""", returnStdout: true).trim()
+                    // Run jq to manipulate JSON
+                    bat '''
+                        jq ".taskDefinition.containerDefinitions[0].image = \"${newImageUri}\" |
+                            del(.taskDefinitionArn) |
+                            del(.revision) |
+                            del(.status) |
+                            del(.requiresAttributes) |
+                            del(.compatibilities) |
+                            del(.registeredAt) |
+                            del(.registeredBy)" task-def.json > updated-task-def.json
+                    '''
 
-// Find where the JSON starts and extract it
-def jsonStart = rawOutput.indexOf("{")
-def taskDefJson = rawOutput.substring(jsonStart)
-
-def updatedTaskDefJson = taskDefJson
-    .replaceFirst(/^{\s*"taskDefinition":\s*{/, '{')  // Replace the opening "taskDefinition" wrapper
-    .replaceFirst(/}\s*$/, '}')  // Remove the closing bracket of the "taskDefinition" wrapper
-    .replaceAll(/"taskDefinitionArn":\s*"[^"]+",?/, '')  // Other replacements as needed
-    .replaceAll(/"revision":\s*\d+,?/, '')
-    .replaceAll(/"status":\s*"[^"]+",?/, '')
-    .replaceAll(/"requiresAttributes":\s*\[[^\]]*\],?/, '')
-    .replaceAll(/"compatibilities":\s*\[[^\]]*\],?/, '')
-    .replaceAll(/"registeredAt":\s*"[^"]+",?/, '')
-    .replaceAll(/"registeredBy":\s*"[^"]+",?/, '')
-
-// Print out the updated JSON for debugging
-echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
-
-
-            // Print out the updated JSON for debugging
-            echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
+                    // Load and print the updated JSON
+                    def updatedTaskDefJson = readFile('updated-task-def.json')
+                    echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
 
 
             // Step 3: Register the updated task definition
