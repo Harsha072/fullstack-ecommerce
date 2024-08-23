@@ -101,21 +101,21 @@ pipeline {
                 aws ecs describe-task-definition --task-definition ${taskDefinitionName} --region us-east-1 --output json
             """, returnStdout: true).trim()
 
-           echo "${taskDefJson}"
+           
 
-            // Step 2: Modify the JSON string
-            // def updatedTaskDefJson = taskDefJson
-            //     .replaceFirst(/("image":\s*")[^"]+/, "\$1${newImageUri}")
-            //     .replaceAll(/"taskDefinitionArn":\s*"[^"]+",?/, '')
-            //     .replaceAll(/"revision":\s*\d+,?/, '')
-            //     .replaceAll(/"status":\s*"[^"]+",?/, '')
-            //     .replaceAll(/"requiresAttributes":\s*\[[^\]]*\],?/, '')
-            //     .replaceAll(/"compatibilities":\s*\[[^\]]*\],?/, '')
-            //     .replaceAll(/"registeredAt":\s*"[^"]+",?/, '')
-            //     .replaceAll(/"registeredBy":\s*"[^"]+",?/, '')
+            //Step 2: Modify the JSON string
+            def updatedTaskDefJson = taskDefJson
+                .replaceFirst(/("image":\s*")[^"]+/, "\$1${newImageUri}")
+                .replaceAll(/"taskDefinitionArn":\s*"[^"]+",?/, '')
+                .replaceAll(/"revision":\s*\d+,?/, '')
+                .replaceAll(/"status":\s*"[^"]+",?/, '')
+                .replaceAll(/"requiresAttributes":\s*\[[^\]]*\],?/, '')
+                .replaceAll(/"compatibilities":\s*\[[^\]]*\],?/, '')
+                .replaceAll(/"registeredAt":\s*"[^"]+",?/, '')
+                .replaceAll(/"registeredBy":\s*"[^"]+",?/, '')
 
-            // // Print out the updated JSON for debugging
-            // echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
+            // Print out the updated JSON for debugging
+            echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
 
 
             // // Step 3: Register the updated task definition
