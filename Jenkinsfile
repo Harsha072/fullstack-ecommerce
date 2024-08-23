@@ -104,7 +104,7 @@ pipeline {
                     // Write the task definition JSON to a file (assuming taskDefJson contains the original JSON)
 
                     // Set the environment variable and use jq to modify the JSON
-                    bat '''set newImageUri=242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest jq ".taskDefinition.containerDefinitions[0].image = \"%newImageUri%\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json'''
+                    bat ''' jq ".taskDefinition.containerDefinitions[0].image = \"%newImageUri%\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json'''
 
                     // Register the updated task definition with AWS ECS
                     // def registerStatus = bat(script: """
