@@ -104,16 +104,16 @@ pipeline {
                     // Write the task definition JSON to a file (assuming taskDefJson contains the original JSON)
 
                     // Set the environment variable and use jq to modify the JSON
-                    bat ''' jq ".taskDefinition.containerDefinitions[0].image = \"%newImageUri%\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json'''
+                    bat '''set newImageUri=242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest jq ".taskDefinition.containerDefinitions[0].image = \"%newImageUri%\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json'''
 
-                    // Register the updated task definition with AWS ECS
-                    // def registerStatus = bat(script: """
-                    //     aws ecs register-task-definition --cli-input-json file://updated-task-def.json
-                    // """, returnStatus: true)
+                    Register the updated task definition with AWS ECS
+                    def registerStatus = bat(script: """
+                        aws ecs register-task-definition --cli-input-json file://updated-task-def.json
+                    """, returnStatus: true)
 
-                    // if (registerStatus != 0) {
-                    //     error 'Failed to register the new task definition revision.'
-                    // }
+                    if (registerStatus != 0) {
+                        error 'Failed to register the new task definition revision.'
+                    }
 
                     echo 'Successfully registered the new task definition revision.'
                 }
