@@ -110,6 +110,11 @@ pipeline {
                     // Describe the current task definition
                     def taskDefJson = bat(script: "aws ecs describe-task-definition --task-definition ${env.TASK_DEF_NAME} --region ${env.AWS_REGION} --output json", returnStdout: true).trim()
                     echo "TASK DEF:\n${taskDefJson}"
+                    writeFile file: 'task.json', text: taskDefJson
+                    
+                    bat '''jq ".taskDefinition.containerDefinitions[0].image = \"${newImageUri}\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json'''
+                   def updatedTaskDefJson = readFile('updated-task-def.json')
+                   echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
                     // This part would be replaced with the jq manipulation in practice
                     // For now, simulate a successful registration
                     def registerStatus = 0 // Placeholder, replace with actual command in production
