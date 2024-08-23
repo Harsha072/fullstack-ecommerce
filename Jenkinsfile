@@ -123,7 +123,8 @@ def updatedTaskDefJson = taskDefJson
     .replaceAll(/"registeredBy":\s*"[^"]+",?/, '')
 
 // Manually construct the JSON to start from "containerDefinitions"
-def cleanTaskDefJson = updatedTaskDefJson.replaceFirst(/^{\s*"taskDefinition":\s*{/, '{')
+def cleanTaskDefJson = updatedTaskDefJson.replaceFirst(/^\\{\\s*"taskDefinition":\\s*\\{/, '{')
+
 
 // Print out the cleaned JSON for debugging
 echo "Cleaned Task Definition JSON:\n${cleanTaskDefJson}"
