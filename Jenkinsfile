@@ -96,12 +96,20 @@ pipeline {
             def taskDefinitionName = 'backend-api-backup'
             def newImageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
 
-            // Step 1: Get the existing task definition from AWS CLI
-            def taskDefJson = bat(script: """
-                aws ecs describe-task-definition --task-definition ${taskDefinitionName} --region us-east-1 --output json
-            """, returnStdout: true).trim()
+            // // Step 1: Get the existing task definition from AWS CLI
+            // def taskDefJson = bat(script: """
+            //     aws ecs describe-task-definition --task-definition ${taskDefinitionName} --region us-east-1 --output json
+            // """, returnStdout: true).trim()
 
-           
+         def rawOutput = bat(script: """
+    aws ecs describe-task-definition --task-definition ${taskDefinitionName} --region us-east-1 --output json
+""", returnStdout: true).trim()
+
+// Find where the JSON starts and extract it
+def jsonStart = rawOutput.indexOf("{")
+def taskDefJson = rawOutput.substring(jsonStart)
+
+echo "Clean Task Definition JSON:\n${taskDefJson}"  
 
             //Step 2: Modify the JSON string
             def updatedTaskDefJson = taskDefJson
