@@ -126,13 +126,13 @@ echo "Clean Task Definition JSON:\n${taskDefJson}"
             echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
 
 
-            // // Step 3: Register the updated task definition
-            // def registerStatus = bat(script: """
-            //     aws ecs register-task-definition --cli-input-json '${updatedTaskDefJson}' --region us-east-1
-            // """, returnStatus: true)
-            // if (registerStatus != 0) {
-            //     error 'Failed to register the new task definition revision.'
-            // }
+            // Step 3: Register the updated task definition
+            def registerStatus = bat(script: """
+                aws ecs register-task-definition --cli-input-json '${updatedTaskDefJson}' --region us-east-1
+            """, returnStatus: true)
+            if (registerStatus != 0) {
+                error 'Failed to register the new task definition revision.'
+            }
 
             echo 'Successfully registered the new task definition revision.'
         }
