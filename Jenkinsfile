@@ -162,10 +162,10 @@ pipeline {
 
                         // Print the updated JSON to the Jenkins console output
                         echo "Updated Task Definition JSON:\n${updatedJsonOutput}"
-                        // Register the new task definition
-                        // def registerStatus = bat(script: """aws ecs register-task-definition --cli-input-json '${updatedJsonOutput}' --region ${env.AWS_REGION}""", returnStdout: true).trim()
-                        // echo "Register Status:\n${registerStatus}"
-                        // echo 'Successfully registered the new task definition revision.'
+                        //Register the new task definition
+                        def registerStatus = bat(script: """aws ecs register-task-definition --cli-input-json '${updatedJsonOutput}' --region ${env.AWS_REGION}""", returnStdout: true).trim()
+                        echo "Register Status:\n${registerStatus}"
+                        echo 'Successfully registered the new task definition revision.'
 
                         // // Extract the new revision number from the registration output
                         // def newRevision = registerStatus.readLines().find { it.contains('"taskDefinitionArn"') }.split(':')[6].replaceAll('"', '').trim()
@@ -178,7 +178,7 @@ pipeline {
                         //     error 'Failed to update the ECS service with the new task definition revision.'
                         // }
 
-                        echo 'Successfully updated the ECS service to use the new task definition revision.'
+                       
 
                     } catch (Exception e) {
                         error "Error processing JSON data: ${e.message}"
