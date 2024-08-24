@@ -138,7 +138,7 @@ pipeline {
                         // Modify the image URI
                         
                         // Define the new image URI
-                        def newImageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
+                        //def newImageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
 
                         // Modify the image URI
                         json.taskDefinition.containerDefinitions[0].image = newImageUri
