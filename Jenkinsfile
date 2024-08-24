@@ -139,34 +139,39 @@ pipeline {
                         json.taskDefinition.containerDefinitions[0].image = newImageUri
 
                         // Remove unwanted fields
-                        json.taskDefinition.remove('taskDefinitionArn')
-                        json.taskDefinition.remove('revision')
-                        json.taskDefinition.remove('status')
-                        json.taskDefinition.remove('requiresAttributes')
-                        json.taskDefinition.remove('compatibilities')
-                        json.taskDefinition.remove('registeredAt')
-                        json.taskDefinition.remove('registeredBy')
+                        def updatedJson = [
+                            containerDefinitions: json.taskDefinition.containerDefinitions,
+                            family: json.taskDefinition.family,
+                            executionRoleArn: json.taskDefinition.executionRoleArn,
+                            networkMode: json.taskDefinition.networkMode,
+                            volumes: json.taskDefinition.volumes,
+                            placementConstraints: json.taskDefinition.placementConstraints,
+                            runtimePlatform: json.taskDefinition.runtimePlatform,
+                            requiresCompatibilities: json.taskDefinition.requiresCompatibilities,
+                            cpu: json.taskDefinition.cpu,
+                            memory: json.taskDefinition.memory
+                        ]
 
                         // Convert the updated JSON object to a string
                         def updatedJsonOutput = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(json))
 
                         // Print the updated JSON to the Jenkins console output
                         echo "Updated Task Definition JSON:\n${updatedJsonOutput}"
-                        // Register the new task definition
+                        Register the new task definition
                         def registerStatus = bat(script: """aws ecs register-task-definition --cli-input-json '${updatedJsonOutput}' --region ${env.AWS_REGION}""", returnStdout: true).trim()
                         echo "Register Status:\n${registerStatus}"
                         echo 'Successfully registered the new task definition revision.'
 
-                        // Extract the new revision number from the registration output
-                        def newRevision = registerStatus.readLines().find { it.contains('"taskDefinitionArn"') }.split(':')[6].replaceAll('"', '').trim()
-                        echo "New Task Definition Revision: ${newRevision}"
+                        // // Extract the new revision number from the registration output
+                        // def newRevision = registerStatus.readLines().find { it.contains('"taskDefinitionArn"') }.split(':')[6].replaceAll('"', '').trim()
+                        // echo "New Task Definition Revision: ${newRevision}"
 
-                        // Update the ECS service with the new task definition revision
-                        def updateServiceStatus = bat(script: """aws ecs update-service --cluster ecommerce-cluster --service springboot-api-service --task-definition ${env.TASK_DEF_NAME}:${newRevision} --force-new-deployment --region ${env.AWS_REGION}""", returnStatus: true)
+                        // // Update the ECS service with the new task definition revision
+                        // def updateServiceStatus = bat(script: """aws ecs update-service --cluster ecommerce-cluster --service springboot-api-service --task-definition ${env.TASK_DEF_NAME}:${newRevision} --force-new-deployment --region ${env.AWS_REGION}""", returnStatus: true)
 
-                        if (updateServiceStatus != 0) {
-                            error 'Failed to update the ECS service with the new task definition revision.'
-                        }
+                        // if (updateServiceStatus != 0) {
+                        //     error 'Failed to update the ECS service with the new task definition revision.'
+                        // }
 
                         echo 'Successfully updated the ECS service to use the new task definition revision.'
 
