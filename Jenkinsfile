@@ -115,15 +115,18 @@ pipeline {
                    bat(script: """set newImageUri=${newImageUri} jq ".taskDefinition.containerDefinitions[0].image = \\"%newImageUri%\\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json""") 
                    def updatedTaskDefJson = readFile('updated-task-def.json')
                    echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
-                    // This part would be replaced with the jq manipulation in practice
-                    // For now, simulate a successful registration
-                    def registerStatus = 0 // Placeholder, replace with actual command in production
-                    
-                    if (registerStatus != 0) {
-                        error 'Failed to register the new task definition revision.'
-                    }
-
                     echo 'Successfully registered the new task definition revision.'
+                   
+                   // Update the ECS service to use the new task definition revision
+                  def updateServiceStatus = bat(script: """aws ecs update-service --cluster ecommerce-cluster --service springboot-api-service --force-new-deployment --region ${env.AWS_REGION}""", returnStatus: true)
+
+                if (updateServiceStatus != 0) {
+                  error 'Failed to update the ECS service with the new task definition revision.'
+                  }
+
+                       echo 'Successfully updated the ECS service to use the new task definition revision.'
+
+                   
                 }
             }
         }
