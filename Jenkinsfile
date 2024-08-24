@@ -101,11 +101,12 @@ pipeline {
             }
         }
 
+         stages {
         stage('Update Task Definition and Register New Revision') {
-            
             steps {
                 script {
                     echo "Task Definition Name: ${env.TASK_DEF_NAME}"
+
                     // Describe the current task definition
                     def rawOutput = bat(script: "aws ecs describe-task-definition --task-definition ${env.TASK_DEF_NAME} --region ${env.AWS_REGION} --output json", returnStdout: true).trim()
 
@@ -123,61 +124,59 @@ pipeline {
                         } else {
                             error "Failed to extract JSON data from the output."
                         }
-                        
+
                         // Print the JSON data for verification
                         echo "JSON Data:\n${jsonOutput}"
-                    
-                    // Parse JSON
-                    def jsonSlurper = new groovy.json.JsonSlurper()
-                    def json = jsonSlurper.parseText(jsonFile)
 
-                    // Define the new image URI
-                    def newImageUri ="${env.ECR_REPO_URI}/${env.imageName}:latest"// You can use env.newImageUri if it's set
+                        // Parse JSON
+                        def jsonSlurper = new groovy.json.JsonSlurper()
+                        def json = jsonSlurper.parseText(jsonOutput)
 
-                    // Modify the image URI
-                    json.taskDefinition.containerDefinitions[0].image = "${newImageUri}"
+                        // Define the new image URI
+                        def newImageUri = "${env.ECR_REPO_URI}/${env.imageName}:latest"
 
-                    // Remove unwanted fields
-                    json.taskDefinition.remove('taskDefinitionArn')
-                    json.taskDefinition.remove('revision')
-                    json.taskDefinition.remove('status')
-                    json.taskDefinition.remove('requiresAttributes')
-                    json.taskDefinition.remove('compatibilities')
-                    json.taskDefinition.remove('registeredAt')
-                    json.taskDefinition.remove('registeredBy')
-                    def updatedJsonOutput = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(json))
+                        // Modify the image URI
+                        json.taskDefinition.containerDefinitions[0].image = newImageUri
+
+                        // Remove unwanted fields
+                        json.taskDefinition.remove('taskDefinitionArn')
+                        json.taskDefinition.remove('revision')
+                        json.taskDefinition.remove('status')
+                        json.taskDefinition.remove('requiresAttributes')
+                        json.taskDefinition.remove('compatibilities')
+                        json.taskDefinition.remove('registeredAt')
+                        json.taskDefinition.remove('registeredBy')
+
+                        // Convert the updated JSON object to a string
+                        def updatedJsonOutput = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(json))
 
                         // Print the updated JSON to the Jenkins console output
                         echo "Updated Task Definition JSON:\n${updatedJsonOutput}"
+                        // Register the new task definition
+                        def registerStatus = bat(script: """aws ecs register-task-definition --cli-input-json '${updatedJsonOutput}' --region ${env.AWS_REGION}""", returnStdout: true).trim()
+                        echo "Register Status:\n${registerStatus}"
+                        echo 'Successfully registered the new task definition revision.'
+
+                        // Extract the new revision number from the registration output
+                        def newRevision = registerStatus.readLines().find { it.contains('"taskDefinitionArn"') }.split(':')[6].replaceAll('"', '').trim()
+                        echo "New Task Definition Revision: ${newRevision}"
+
+                        // Update the ECS service with the new task definition revision
+                        def updateServiceStatus = bat(script: """aws ecs update-service --cluster ecommerce-cluster --service springboot-api-service --task-definition ${env.TASK_DEF_NAME}:${newRevision} --force-new-deployment --region ${env.AWS_REGION}""", returnStatus: true)
+
+                        if (updateServiceStatus != 0) {
+                            error 'Failed to update the ECS service with the new task definition revision.'
+                        }
+
+                        echo 'Successfully updated the ECS service to use the new task definition revision.'
+
                     } catch (Exception e) {
                         error "Error processing JSON data: ${e.message}"
                     }
-                 // Read the updated task definition
-                // def updatedTaskDefJson = readFile('updated-task-def.json')
-                //  echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
-
-                   // bat(script: """set newImageUri=${newImageUri}
-                    //jq ".taskDefinition.containerDefinitions[0].image = \\"%newImageUri%\\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json""")
-         
-                    def registerStatus = bat(script: """aws ecs register-task-definition --cli-input-json ${updatedTaskDefJson} --region ${env.AWS_REGION}""", returnStdout: true).trim()
-                    echo "Register Status:\n${registerStatus}"
-                    echo 'Successfully registered the new task definition revision.'
-                    // Extract the new revision number from the registration output
-            // def newRevision = registerStatus.readLines().find { it.contains('"taskDefinitionArn"') }.split(':')[6].replaceAll('"', '').trim()
-            // echo "New Task Definition Revision: ${newRevision}"
-                   
-                //  def updateServiceStatus = bat(script: """aws ecs update-service --cluster ecommerce-cluster --service springboot-api-service --task-definition ${env.TASK_DEF_NAME}:${newRevision} --force-new-deployment --region ${env.AWS_REGION}""", returnStatus: true)
-
-            // if (updateServiceStatus != 0) {
-            //     error 'Failed to update the ECS service with the new task definition revision.'
-            // }
-
-                       echo 'Successfully updated the ECS service to use the new task definition revision.'
-
-                   
                 }
             }
         }
+    }
     }
 
     post {
