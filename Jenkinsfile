@@ -156,9 +156,8 @@ pipeline {
 
                         // Print the updated JSON to the Jenkins console output
                         echo "Updated Task Definition JSON:\n${updatedJsonOutput}"
-                        // Convert the updated JSON object to a string
-                        def updatedJsonOutput = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(updatedJson))
-                          // Write the updated JSON to a file
+                       
+                        // Write the updated JSON to a file
                         writeFile file: 'updated-task-def.json', text: updatedJsonOutput
 
                         //Register the new task definition
