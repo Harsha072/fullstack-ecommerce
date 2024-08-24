@@ -120,7 +120,6 @@ pipeline {
                 def updatedTaskDefJson = readFile('updated-task-def.json')
                  echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
 
-
                    // bat(script: """set newImageUri=${newImageUri}
                     //jq ".taskDefinition.containerDefinitions[0].image = \\"%newImageUri%\\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json""")
          
