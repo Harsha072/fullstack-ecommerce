@@ -1,7 +1,3 @@
-
-import groovy.json.JsonSlurperClassic
-import groovy.json.JsonOutput
-
 pipeline {
     agent any
 
@@ -132,38 +128,47 @@ pipeline {
                         // Print the JSON data for verification
                         echo "JSON Data:\n${jsonOutput}"
 
-                       // Parse JSON using JsonSlurperClassic
-                        def jsonSlurperClassic = new JsonSlurperClassic()
-                        def json = jsonSlurperClassic.parseText(jsonOutput)
+                        // Parse JSON
+                        def jsonSlurper = new groovy.json.JsonSlurper()
+                        def json = jsonSlurper.parseText(jsonOutput)
 
                         // Define the new image URI
                         def newImageUri = "${env.ECR_REPO_URI}/${env.imageName}:latest"
 
                         // Modify the image URI
-                        json.containerDefinitions[0].image = newImageUri
+                        
+                        // Define the new image URI
+                        //def newImageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
 
-                        // Remove unwanted fields
-                        json.remove('taskDefinitionArn')
-                        json.remove('revision')
-                        json.remove('status')
-                        json.remove('requiresAttributes')
-                        json.remove('compatibilities')
-                        json.remove('registeredAt')
-                        json.remove('registeredBy')
+                        // Modify the image URI
+                        json.taskDefinition.containerDefinitions[0].image = newImageUri
 
-                    // Convert the updated JSON object to a string
-                        def updatedJsonOutput = JsonOutput.prettyPrint(JsonOutput.toJson(json))
+                        // Create a new JSON structure with required fields
+                        def updatedJson = [
+                            containerDefinitions: json.taskDefinition.containerDefinitions,
+                            family: json.taskDefinition.family,
+                            executionRoleArn: json.taskDefinition.executionRoleArn,
+                            networkMode: json.taskDefinition.networkMode,
+                            volumes: json.taskDefinition.volumes,
+                            placementConstraints: json.taskDefinition.placementConstraints,
+                            runtimePlatform: json.taskDefinition.runtimePlatform,
+                            requiresCompatibilities: json.taskDefinition.requiresCompatibilities,
+                            cpu: json.taskDefinition.cpu,
+                            memory: json.taskDefinition.memory
+                        ]
+
+                        // Convert the updated JSON object to a string
+                        def updatedJsonOutput = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(updatedJson))
 
                         // Print the updated JSON to the Jenkins console output
                         echo "Updated Task Definition JSON:\n${updatedJsonOutput}"
-                       
-                        // Write the updated JSON to a file
+                          // Write the updated JSON to a file
                         writeFile file: 'updated-task-def.json', text: updatedJsonOutput
 
                         //Register the new task definition
-                        // def registerStatus = bat(script: """aws ecs register-task-definition --cli-input-json file://updated-task-def.json  --region us-east-1""", returnStdout: true).trim()
-                        // echo "Register Status:\n${registerStatus}"
-                        // echo 'Successfully registered the new task definition revision.'
+                        def registerStatus = bat(script: """aws ecs register-task-definition --cli-input-json file://updated-task-def.json  --region us-east-1""", returnStdout: true).trim()
+                        echo "Register Status:\n${registerStatus}"
+                        echo 'Successfully registered the new task definition revision.'
 
                         // // Extract the new revision number from the registration output
                         // def newRevision = registerStatus.readLines().find { it.contains('"taskDefinitionArn"') }.split(':')[6].replaceAll('"', '').trim()
