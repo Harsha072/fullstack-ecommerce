@@ -112,11 +112,17 @@ pipeline {
                     echo "TASK DEF:\n${taskDefJson}"
                     echo "image uri :\n${newImageUri}"
                     writeFile file: 'task.json', text: taskDefJson
-                    
-                    bat(script: """set newImageUri=${newImageUri}
-                    jq ".taskDefinition.containerDefinitions[0].image = \\"%newImageUri%\\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json""")
-            def updatedTaskDefJson = readFile('updated-task-def.json')
-                   echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
+                     def jqCommand = """jq ".taskDefinition.containerDefinitions[0].image = \\"${newImageUri}\\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json"""
+                     // Execute the jq command
+                     bat(script: jqCommand)
+            
+            // Read the updated task definition
+                def updatedTaskDefJson = readFile('updated-task-def.json')
+                 echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
+
+                   // bat(script: """set newImageUri=${newImageUri}
+                    //jq ".taskDefinition.containerDefinitions[0].image = \\"%newImageUri%\\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json""")
+         
                     def registerStatus = bat(script: """aws ecs register-task-definition --cli-input-json ${updatedTaskDefJson} --region ${env.AWS_REGION}""", returnStdout: true).trim()
                     echo "Register Status:\n${registerStatus}"
                     echo 'Successfully registered the new task definition revision.'
