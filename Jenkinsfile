@@ -116,14 +116,18 @@ pipeline {
                    bat(script: """set newImageUri=${newImageUri} jq ".taskDefinition.containerDefinitions[0].image = \\"%newImageUri%\\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json""") 
                    def updatedTaskDefJson = readFile('updated-task-def.json')
                    echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
+                    def registerStatus = bat(script: """aws ecs register-task-definition --cli-input-json ${updatedTaskDefJson} --region ${env.AWS_REGION}""", returnStdout: true).trim()
+                    echo "Register Status:\n${registerStatus}"
                     echo 'Successfully registered the new task definition revision.'
+                    // Extract the new revision number from the registration output
+            // def newRevision = registerStatus.readLines().find { it.contains('"taskDefinitionArn"') }.split(':')[6].replaceAll('"', '').trim()
+            // echo "New Task Definition Revision: ${newRevision}"
                    
-                   // Update the ECS service to use the new task definition revision
-                 // def updateServiceStatus = bat(script: """aws ecs update-service --cluster ecommerce-cluster --service springboot-api-service --force-new-deployment --region ${env.AWS_REGION}""", returnStatus: true)
+                //  def updateServiceStatus = bat(script: """aws ecs update-service --cluster ecommerce-cluster --service springboot-api-service --task-definition ${env.TASK_DEF_NAME}:${newRevision} --force-new-deployment --region ${env.AWS_REGION}""", returnStatus: true)
 
-                if (updateServiceStatus != 0) {
-                  error 'Failed to update the ECS service with the new task definition revision.'
-                  }
+            if (updateServiceStatus != 0) {
+                error 'Failed to update the ECS service with the new task definition revision.'
+            }
 
                        echo 'Successfully updated the ECS service to use the new task definition revision.'
 
