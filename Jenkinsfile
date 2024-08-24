@@ -102,23 +102,41 @@ pipeline {
         }
 
         stage('Update Task Definition and Register New Revision') {
+            
             steps {
                 script {
                     echo "Task Definition Name: ${env.TASK_DEF_NAME}"
-                    def newImageUri = "${env.ECR_REPO_URI}/${env.imageName}:latest"
-
                     // Describe the current task definition
                     def taskDefJson = bat(script: "aws ecs describe-task-definition --task-definition ${env.TASK_DEF_NAME} --region ${env.AWS_REGION} --output json", returnStdout: true).trim()
                     echo "TASK DEF:\n${taskDefJson}"
-                    echo "image uri :\n${newImageUri}"
                     writeFile file: 'task.json', text: taskDefJson
-                     def jqCommand = """ set newImageUri=${newImageUri} jq ".taskDefinition.containerDefinitions[0].image = \\"%newImageUri%\\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json"""
-                     // Execute the jq command
-                     bat(script: jqCommand)
-            
-            // Read the updated task definition
-                def updatedTaskDefJson = readFile('updated-task-def.json')
-                 echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
+                                        def jsonFile = readFile('task.json')
+                    
+                    // Parse JSON
+                    def jsonSlurper = new groovy.json.JsonSlurper()
+                    def json = jsonSlurper.parseText(jsonFile)
+
+                    // Define the new image URI
+                    def newImageUri ="${env.ECR_REPO_URI}/${env.imageName}:latest"// You can use env.newImageUri if it's set
+
+                    // Modify the image URI
+                    json.taskDefinition.containerDefinitions[0].image = newImageUri
+
+                    // Remove unwanted fields
+                    json.taskDefinition.remove('taskDefinitionArn')
+                    json.taskDefinition.remove('revision')
+                    json.taskDefinition.remove('status')
+                    json.taskDefinition.remove('requiresAttributes')
+                    json.taskDefinition.remove('compatibilities')
+                    json.taskDefinition.remove('registeredAt')
+                    json.taskDefinition.remove('registeredBy')
+
+                    // Convert the updated JSON object to a string
+                    def jsonOutput = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(json))
+                     echo "Updated Task Definition JSON:\n${jsonOutput}"
+                 // Read the updated task definition
+                // def updatedTaskDefJson = readFile('updated-task-def.json')
+                //  echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
 
                    // bat(script: """set newImageUri=${newImageUri}
                     //jq ".taskDefinition.containerDefinitions[0].image = \\"%newImageUri%\\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json""")
