@@ -110,6 +110,7 @@ pipeline {
                     // Describe the current task definition
                     def taskDefJson = bat(script: "aws ecs describe-task-definition --task-definition ${env.TASK_DEF_NAME} --region ${env.AWS_REGION} --output json", returnStdout: true).trim()
                     echo "TASK DEF:\n${taskDefJson}"
+                    echo "image uri :\n${newImageUri}"
                     writeFile file: 'task.json', text: taskDefJson
                     
                    bat(script: """set newImageUri=${newImageUri} jq ".taskDefinition.containerDefinitions[0].image = \\"%newImageUri%\\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json""") 
