@@ -107,10 +107,25 @@ pipeline {
                 script {
                     echo "Task Definition Name: ${env.TASK_DEF_NAME}"
                     // Describe the current task definition
-                    def taskDefJson = bat(script: "aws ecs describe-task-definition --task-definition ${env.TASK_DEF_NAME} --region ${env.AWS_REGION} --output json", returnStdout: true).trim()
-                    echo "TASK DEF:\n${taskDefJson}"
-                    writeFile file: 'task.json', text: taskDefJson
-                                        def jsonFile = readFile('task.json')
+                    def rawOutput = bat(script: "aws ecs describe-task-definition --task-definition ${env.TASK_DEF_NAME} --region ${env.AWS_REGION} --output json", returnStdout: true).trim()
+
+                    // Print the raw output for debugging purposes
+                    echo "Raw Output:\n${rawOutput}"
+
+                    // Extract only the JSON part of the output
+                    def jsonOutput
+                    try {
+                        // Parse the raw output to isolate the JSON part
+                        def jsonStart = rawOutput.indexOf('{')
+                        def jsonEnd = rawOutput.lastIndexOf('}')
+                        if (jsonStart != -1 && jsonEnd != -1) {
+                            jsonOutput = rawOutput.substring(jsonStart, jsonEnd + 1)
+                        } else {
+                            error "Failed to extract JSON data from the output."
+                        }
+                        
+                        // Print the JSON data for verification
+                        echo "JSON Data:\n${jsonOutput}"
                     
                     // Parse JSON
                     def jsonSlurper = new groovy.json.JsonSlurper()
@@ -120,7 +135,7 @@ pipeline {
                     def newImageUri ="${env.ECR_REPO_URI}/${env.imageName}:latest"// You can use env.newImageUri if it's set
 
                     // Modify the image URI
-                    json.taskDefinition.containerDefinitions[0].image = newImageUri
+                    json.taskDefinition.containerDefinitions[0].image = "${newImageUri}"
 
                     // Remove unwanted fields
                     json.taskDefinition.remove('taskDefinitionArn')
