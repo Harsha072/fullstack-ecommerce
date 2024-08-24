@@ -136,9 +136,14 @@ pipeline {
                         def newImageUri = "${env.ECR_REPO_URI}/${env.imageName}:latest"
 
                         // Modify the image URI
+                        
+                        // Define the new image URI
+                        def newImageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
+
+                        // Modify the image URI
                         json.taskDefinition.containerDefinitions[0].image = newImageUri
 
-                        // Remove unwanted fields
+                        // Create a new JSON structure with required fields
                         def updatedJson = [
                             containerDefinitions: json.taskDefinition.containerDefinitions,
                             family: json.taskDefinition.family,
@@ -153,14 +158,14 @@ pipeline {
                         ]
 
                         // Convert the updated JSON object to a string
-                        def updatedJsonOutput = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(json))
+                        def updatedJsonOutput = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(updatedJson))
 
                         // Print the updated JSON to the Jenkins console output
                         echo "Updated Task Definition JSON:\n${updatedJsonOutput}"
-                        //Register the new task definition
-                        def registerStatus = bat(script: """aws ecs register-task-definition --cli-input-json '${updatedJsonOutput}' --region ${env.AWS_REGION}""", returnStdout: true).trim()
-                        echo "Register Status:\n${registerStatus}"
-                        echo 'Successfully registered the new task definition revision.'
+                        // Register the new task definition
+                        // def registerStatus = bat(script: """aws ecs register-task-definition --cli-input-json '${updatedJsonOutput}' --region ${env.AWS_REGION}""", returnStdout: true).trim()
+                        // echo "Register Status:\n${registerStatus}"
+                        // echo 'Successfully registered the new task definition revision.'
 
                         // // Extract the new revision number from the registration output
                         // def newRevision = registerStatus.readLines().find { it.contains('"taskDefinitionArn"') }.split(':')[6].replaceAll('"', '').trim()
