@@ -166,9 +166,9 @@ pipeline {
                         writeFile file: 'updated-task-def.json', text: updatedJsonOutput
 
                         //Register the new task definition
-                        def registerStatus = bat(script: """aws ecs register-task-definition --cli-input-json file://updated-task-def.json  --region us-east-1""", returnStdout: true).trim()
-                        echo "Register Status:\n${registerStatus}"
-                        echo 'Successfully registered the new task definition revision.'
+                        // def registerStatus = bat(script: """aws ecs register-task-definition --cli-input-json file://updated-task-def.json  --region us-east-1""", returnStdout: true).trim()
+                        // echo "Register Status:\n${registerStatus}"
+                        // echo 'Successfully registered the new task definition revision.'
 
                         // // Extract the new revision number from the registration output
                         // def newRevision = registerStatus.readLines().find { it.contains('"taskDefinitionArn"') }.split(':')[6].replaceAll('"', '').trim()
