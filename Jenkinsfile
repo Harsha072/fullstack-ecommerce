@@ -113,7 +113,7 @@ pipeline {
                     echo "image uri :\n${newImageUri}"
                     writeFile file: 'task.json', text: taskDefJson
                     
-                   bat(script: """set newImageUri=${newImageUri} jq ".taskDefinition.containerDefinitions[0].image = \\"%newImageUri%\\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json""") 
+                   bat(script: """set newImageUri=242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest jq ".taskDefinition.containerDefinitions[0].image = \\"%newImageUri%\\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json""") 
                    def updatedTaskDefJson = readFile('updated-task-def.json')
                    echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
                     def registerStatus = bat(script: """aws ecs register-task-definition --cli-input-json ${updatedTaskDefJson} --region ${env.AWS_REGION}""", returnStdout: true).trim()
@@ -125,9 +125,9 @@ pipeline {
                    
                 //  def updateServiceStatus = bat(script: """aws ecs update-service --cluster ecommerce-cluster --service springboot-api-service --task-definition ${env.TASK_DEF_NAME}:${newRevision} --force-new-deployment --region ${env.AWS_REGION}""", returnStatus: true)
 
-            if (updateServiceStatus != 0) {
-                error 'Failed to update the ECS service with the new task definition revision.'
-            }
+            // if (updateServiceStatus != 0) {
+            //     error 'Failed to update the ECS service with the new task definition revision.'
+            // }
 
                        echo 'Successfully updated the ECS service to use the new task definition revision.'
 
