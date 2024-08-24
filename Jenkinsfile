@@ -101,7 +101,7 @@ pipeline {
             }
         }
 
-         stages {
+        
         stage('Update Task Definition and Register New Revision') {
             steps {
                 script {
@@ -176,7 +176,7 @@ pipeline {
                 }
             }
         }
-    }
+    
     }
 
     post {
