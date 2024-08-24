@@ -162,8 +162,11 @@ pipeline {
 
                         // Print the updated JSON to the Jenkins console output
                         echo "Updated Task Definition JSON:\n${updatedJsonOutput}"
+                          // Write the updated JSON to a file
+                        writeFile file: 'updated-task-def.json', text: updatedJsonOutput
+
                         //Register the new task definition
-                        def registerStatus = bat(script: """aws ecs register-task-definition --cli-input-json '${updatedJsonOutput}' --region ${env.AWS_REGION}""", returnStdout: true).trim()
+                        def registerStatus = bat(script: """aws ecs register-task-definition --cli-input-json file://updated-task-def.json  --region us-east-1""", returnStdout: true).trim()
                         echo "Register Status:\n${registerStatus}"
                         echo 'Successfully registered the new task definition revision.'
 
