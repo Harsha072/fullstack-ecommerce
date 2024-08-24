@@ -112,7 +112,7 @@ pipeline {
                     echo "TASK DEF:\n${taskDefJson}"
                     echo "image uri :\n${newImageUri}"
                     writeFile file: 'task.json', text: taskDefJson
-                     def jqCommand = """jq ".taskDefinition.containerDefinitions[0].image = \\"${newImageUri}\\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json"""
+                     def jqCommand = """ set newImageUri=${newImageUri} jq ".taskDefinition.containerDefinitions[0].image = \\"%newImageUri%\\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json"""
                      // Execute the jq command
                      bat(script: jqCommand)
             
