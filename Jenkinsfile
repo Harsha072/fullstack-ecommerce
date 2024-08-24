@@ -118,7 +118,7 @@ pipeline {
                     echo 'Successfully registered the new task definition revision.'
                    
                    // Update the ECS service to use the new task definition revision
-                  def updateServiceStatus = bat(script: """aws ecs update-service --cluster ecommerce-cluster --service springboot-api-service --force-new-deployment --region ${env.AWS_REGION}""", returnStatus: true)
+                 // def updateServiceStatus = bat(script: """aws ecs update-service --cluster ecommerce-cluster --service springboot-api-service --force-new-deployment --region ${env.AWS_REGION}""", returnStatus: true)
 
                 if (updateServiceStatus != 0) {
                   error 'Failed to update the ECS service with the new task definition revision.'
