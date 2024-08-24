@@ -145,10 +145,13 @@ pipeline {
                     json.taskDefinition.remove('compatibilities')
                     json.taskDefinition.remove('registeredAt')
                     json.taskDefinition.remove('registeredBy')
+                    def updatedJsonOutput = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(json))
 
-                    // Convert the updated JSON object to a string
-                    def jsonOutput = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(json))
-                     echo "Updated Task Definition JSON:\n${jsonOutput}"
+                        // Print the updated JSON to the Jenkins console output
+                        echo "Updated Task Definition JSON:\n${updatedJsonOutput}"
+                    } catch (Exception e) {
+                        error "Error processing JSON data: ${e.message}"
+                    }
                  // Read the updated task definition
                 // def updatedTaskDefJson = readFile('updated-task-def.json')
                 //  echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
