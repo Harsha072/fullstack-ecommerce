@@ -116,8 +116,16 @@ pipeline {
                      """
                      @echo off
                      echo New Image URI: ${newImageUri}
-                     jq --arg img "${newImageUri}" ".taskDefinition.containerDefinitions[0].image = \$img | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json
-                     """
+                     jq --arg img "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest" \
+                     '.taskDefinition.containerDefinitions[0].image = $img | 
+                      del(.taskDefinitionArn) | 
+                      del(.revision) | 
+                      del(.status) | 
+                      del(.requiresAttributes) | 
+                      del(.compatibilities) | 
+                      del(.registeredAt) | 
+                      del(.registeredBy)' task.json > updated-task-def.json
+                      """
                      bat(script: updateJqCommand)
 
                  
