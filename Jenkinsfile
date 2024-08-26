@@ -103,6 +103,9 @@ pipeline {
 
         
         stage('Update Task Definition and Register New Revision') {
+            environment{
+              newImageUri = "${env.ECR_REPO_URI}/${env.imageName}:latest"
+            }
             steps {
                 script {
                     echo "Task Definition Name: ${env.TASK_DEF_NAME}"
@@ -111,64 +114,15 @@ pipeline {
                     def rawOutput = bat(script: "aws ecs describe-task-definition --task-definition ${env.TASK_DEF_NAME} --region ${env.AWS_REGION} --output json", returnStdout: true).trim()
 
                     // Print the raw output for debugging purposes
-                    echo "Raw Output:\n${rawOutput}"
-
+                     echo "Raw Output:\n${rawOutput}"
+                    echo "new Imgae uri:\n"${newImageUri}
+                    // Extract only the JSON part of the output and update the image URI
+                    writeFile file: 'task.json', text: rawOutput
+                   bat(script: """jq ".taskDefinition.containerDefinitions[0].image = \\"${newImageUri}\\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json""")
+                   def updatedTaskDefJson = readFile('updated-task-def.json')
+                   echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
                     // Extract only the JSON part of the output
-                    def jsonOutput
-                    try {
-                        // Parse the raw output to isolate the JSON part
-                        def jsonStart = rawOutput.indexOf('{')
-                        def jsonEnd = rawOutput.lastIndexOf('}')
-                        if (jsonStart != -1 && jsonEnd != -1) {
-                            jsonOutput = rawOutput.substring(jsonStart, jsonEnd + 1)
-                        } else {
-                            error "Failed to extract JSON data from the output."
-                        }
-
-                        // Print the JSON data for verification
-                        echo "JSON Data:\n${jsonOutput}"
-
-                        // Parse JSON
-                        def jsonSlurper = new groovy.json.JsonSlurper()
-                        def json = jsonSlurper.parseText(jsonOutput)
-
-                        // Define the new image URI
-                        def newImageUri = "${env.ECR_REPO_URI}/${env.imageName}:latest"
-
-                        // Modify the image URI
-                        
-                        // Define the new image URI
-                        //def newImageUri = "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest"
-
-                        // Modify the image URI
-                        json.taskDefinition.containerDefinitions[0].image = newImageUri
-
-                        // Create a new JSON structure with required fields
-                        def updatedJson = [
-                            containerDefinitions: json.taskDefinition.containerDefinitions,
-                            family: json.taskDefinition.family,
-                            executionRoleArn: json.taskDefinition.executionRoleArn,
-                            networkMode: json.taskDefinition.networkMode,
-                            volumes: json.taskDefinition.volumes,
-                            placementConstraints: json.taskDefinition.placementConstraints,
-                            runtimePlatform: json.taskDefinition.runtimePlatform,
-                            requiresCompatibilities: json.taskDefinition.requiresCompatibilities,
-                            cpu: json.taskDefinition.cpu,
-                            memory: json.taskDefinition.memory
-                        ]
-                        // Convert the updated JSON object to a string
-                        def updatedJsonOutput = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(updatedJson))
-
-                        // Print the updated JSON to the Jenkins console output
-                        echo "Updated Task Definition JSON:\n${updatedJsonOutput}"
-                          // Write the updated JSON to a file
-                        writeFile file: 'updated-task-def.json', text: updatedJsonOutput
-
-                        //Register the new task definition
-                        def registerStatus = bat(script: """aws ecs register-task-definition --cli-input-json file://updated-task-def.json  --region us-east-1""", returnStdout: true).trim()
-                        echo "Register Status:\n${registerStatus}"
-                        echo 'Successfully registered the new task definition revision.'
-
+                    
                         // // Extract the new revision number from the registration output
                         // def newRevision = registerStatus.readLines().find { it.contains('"taskDefinitionArn"') }.split(':')[6].replaceAll('"', '').trim()
                         // echo "New Task Definition Revision: ${newRevision}"
@@ -179,12 +133,6 @@ pipeline {
                         // if (updateServiceStatus != 0) {
                         //     error 'Failed to update the ECS service with the new task definition revision.'
                         // }
-
-                       
-
-                    } catch (Exception e) {
-                        error "Error processing JSON data: ${e.message}"
-                    }
                 }
             }
         }
