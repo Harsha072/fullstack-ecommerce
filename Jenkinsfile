@@ -103,19 +103,21 @@ pipeline {
 
 
         stage('Update Task Definition and Register New Revision') {
-            environment{
-              newImageUri = "${env.ECR_REPO_URI}/${env.imageName}:latest"
-            }
+            
             steps {
                 script {
                     echo "Task Definition Name: ${env.TASK_DEF_NAME}"
-                  
+                  def newImageUri = "${env.ECR_REPO_URI}/${env.imageName}:latest"
                     // Describe the current task definition
                     def rawOutput = bat(script: "aws ecs describe-task-definition --task-definition ${env.TASK_DEF_NAME} --region ${env.AWS_REGION} --output json", returnStdout: true).trim()
 
                     // Print the raw output for debugging purposes
                      echo "Raw Output:\n${rawOutput}"
-                    echo "using URI:\n${env.ECR_REPO_URI}/${env.imageName}:latest"
+                
+
+                    bat(script: """set "newImageUri=${newImageUri}" && jq ".taskDefinition.containerDefinitions[0].image = \\"%newImageUri%\\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json""")
+                    def updatedTaskDefJson = readFile('updated-task-def.json')
+                   echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
                     // Extract only the JSON part of the output and update the image URI
                 //     writeFile file: 'task.json', text: rawOutput
                 //    bat(script: """jq ".taskDefinition.containerDefinitions[0].image = \\"${newImageUri}\\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json""")
