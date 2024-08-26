@@ -113,11 +113,15 @@ pipeline {
 
                     // Print the raw output for debugging purposes
                      echo "Raw Output:\n${rawOutput}"
-                
+                      def updateJqCommand = """
+                      @echo off
+                     echo New Image URI : ${newImageUri}
+                     """
+                     bat(script: updateJqCommand)
 
-                    bat(script: """set "newImageUri=${newImageUri}" && jq ".taskDefinition.containerDefinitions[0].image = \\"%newImageUri%\\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json""")
-                    def updatedTaskDefJson = readFile('updated-task-def.json')
-                   echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
+                 
+                    //def updatedTaskDefJson = readFile('updated-task-def.json')
+                   //echo "Updated Task Definition JSON:\n${updatedTaskDefJson}"
                     // Extract only the JSON part of the output and update the image URI
                 //     writeFile file: 'task.json', text: rawOutput
                 //    bat(script: """jq ".taskDefinition.containerDefinitions[0].image = \\"${newImageUri}\\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json""")
