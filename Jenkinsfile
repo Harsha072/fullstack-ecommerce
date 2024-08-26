@@ -111,6 +111,7 @@ pipeline {
                     // Describe the current task definition
                     def rawOutput = bat(script: "aws ecs describe-task-definition --task-definition ${env.TASK_DEF_NAME} --region ${env.AWS_REGION} --output json", returnStdout: true).trim()
 
+
                     // Print the raw output for debugging purposes
                     def updateJqCommand = """
                     @echo off
