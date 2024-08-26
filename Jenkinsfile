@@ -156,7 +156,6 @@ pipeline {
                             cpu: json.taskDefinition.cpu,
                             memory: json.taskDefinition.memory
                         ]
-
                         // Convert the updated JSON object to a string
                         def updatedJsonOutput = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(updatedJson))
 
