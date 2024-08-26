@@ -115,7 +115,7 @@ pipeline {
                      echo "Raw Output:\n${rawOutput}"
                       def updateJqCommand = """
                       @echo off
-                     echo New Image URI: ${newImageUri}
+                     echo New Image URI : ${newImageUri}
                      """
                      bat(script: updateJqCommand)
 
