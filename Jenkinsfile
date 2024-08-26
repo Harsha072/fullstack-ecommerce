@@ -111,22 +111,14 @@ pipeline {
                     // Describe the current task definition
                     def rawOutput = bat(script: "aws ecs describe-task-definition --task-definition ${env.TASK_DEF_NAME} --region ${env.AWS_REGION} --output json", returnStdout: true).trim()
 
-
                     // Print the raw output for debugging purposes
-                    def updateJqCommand = """
-                    @echo off
-                    echo New Image URI: 242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest
-                    jq --arg img "242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest" \
-                    ".taskDefinition.containerDefinitions[0].image = \$img | 
-                    del(.taskDefinitionArn) | 
-                    del(.revision) | 
-                    del(.status) | 
-                    del(.requiresAttributes) | 
-                    del(.compatibilities) | 
-                    del(.registeredAt) | 
-                    del(.registeredBy)" task.json > updated-task-def.json
-                    """
-        bat(script: updateJqCommand)
+                     echo "Raw Output:\n${rawOutput}"
+                      def updateJqCommand = """
+                      @echo off
+                     echo New Image URI : ${newImageUri}
+                    jq ".taskDefinition.containerDefinitions[0].image = \"${newImageUri}\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json
+                     """
+                     bat(script: updateJqCommand)
 
                  
                     def updatedTaskDefJson = readFile('updated-task-def.json')
