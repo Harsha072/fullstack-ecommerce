@@ -101,7 +101,7 @@ pipeline {
             }
         }
 
-        
+
         stage('Update Task Definition and Register New Revision') {
             environment{
               newImageUri = "${env.ECR_REPO_URI}/${env.imageName}:latest"
