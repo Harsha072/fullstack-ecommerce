@@ -115,7 +115,6 @@ pipeline {
 
                     // Print the raw output for debugging purposes
                      echo "Raw Output:\n${rawOutput}"
-                    echo "new Imgae uri:\n"${env.newImageUri}
                     echo "using URI:\n${env.ECR_REPO_URI}/${env.imageName}:latest"
                     // Extract only the JSON part of the output and update the image URI
                 //     writeFile file: 'task.json', text: rawOutput
