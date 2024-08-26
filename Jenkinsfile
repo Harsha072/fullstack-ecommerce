@@ -113,7 +113,7 @@ pipeline {
 
                     // Print the raw output for debugging purposes
                      echo "Raw Output:\n${rawOutput}"
-                      def updateJqCommand = """jq ".taskDefinition.containerDefinitions[0].image ="242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json"""
+                      def updateJqCommand = """jq ".taskDefinition.containerDefinitions[0].image =\"242201280065.dkr.ecr.us-east-1.amazonaws.com/spring-boot-ecommerce:latest\" | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)" task.json > updated-task-def.json"""
                      bat(script: updateJqCommand)
 
                  
