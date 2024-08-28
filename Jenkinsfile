@@ -102,9 +102,9 @@ pipeline {
         }
         stage("Update Backend API Service in ECS") {
     environment {
-        TASK_FAMILY = "backend-api-task-family"  // Replace with your actual task family name
+        TASK_FAMILY = "backend-api"  // Replace with your actual task family name
         ECR_IMAGE = "${ECR_REPO_URI}/${imageName}:latest"  // Replace with your actual ECR image URI
-        SERVICE_NAME = "backend-api-service"  // Replace with your actual ECS service name
+        SERVICE_NAME = "springboot-api-service"  // Replace with your actual ECS service name
         CLUSTER_NAME = "ecommerce-cluster"  // Replace with your actual ECS cluster name
         AWS_REGION = "us-east-1"  // Replace with your AWS region
     }            
