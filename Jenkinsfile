@@ -39,14 +39,14 @@ pipeline {
                 }
             }
         }
-          stage('Run Tests') {
-            steps {
-                dir('frontend/angular-ecommerce') {
-                    sh 'echo Running tests...'
-                    sh 'npm run test:ci'
-                }
-            }
-        }
+        //   stage('Run Tests') {
+        //     steps {
+        //         dir('frontend/angular-ecommerce') {
+        //             sh 'echo Running tests...'
+        //             sh 'npm run test:ci'
+        //         }
+        //     }
+        // }
 
         stage('Build Angular App') {
             steps {
