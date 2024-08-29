@@ -69,7 +69,7 @@ pipeline {
                             credentialsId: 'aws-credentials'
                         ]]) {
                             // The AWS CLI command to sync the build output to the S3 bucket
-                            sh 'aws s3 sync dist/ s3://travel-buddy-bucket1 --delete --acl public-read'
+                            sh 'aws s3 sync dist/ s3://travel-buddy-bucket1 --delete'
                         }
                     }
                 }
