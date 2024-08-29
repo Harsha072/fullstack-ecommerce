@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     environment {
+        NODE_OPTIONS = '--openssl-legacy-provider'
         dockerBuild = ''
         imageName = 'spring-boot-ecommerce'
         TASK_DEF_NAME = 'backend-api-backup'
