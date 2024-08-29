@@ -30,6 +30,44 @@ pipeline {
             }
         }
 
+        stage('Install Dependencies') {
+            steps {
+                dir('frontend/angular-ecommerce') {
+                    sh 'echo Installing Node.js dependencies...'
+                    sh 'npm install'
+                }
+            }
+        }
+
+        stage('Build Angular App') {
+            steps {
+                dir('frontend/angular-ecommerce') {
+                    sh 'echo Building Angular application...'
+                    sh 'npm run build -- --prod'  // Building Angular app for production
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                dir('frontend/angular-ecommerce') {
+                    sh 'echo Running tests...'
+                    sh 'npm run test:ci'
+                }
+            }
+        }
+
+        stage('Deploy to S3') {
+            steps {
+                dir('frontend/angular-ecommerce') {
+                    script {
+                        // The AWS CLI command to sync the build output to the S3 bucket
+                        sh 'aws s3 sync dist/ s3://travel-buddy-bucket1 --delete --acl public-read'
+                    }
+                }
+            }
+        }
+
         stage('Install Dependencies - Maven') {
             steps {
                 dir('backend/spring-boot-ecommerce') {
@@ -100,47 +138,39 @@ pipeline {
                 }
             }
         }
+
         stage("Update Backend API Service in ECS") {
-    environment {
-        TASK_FAMILY = "backend-api"  // Replace with your actual task family name
-        ECR_IMAGE = "${ECR_REPO_URI}/${imageName}:latest"  // Replace with your actual ECR image URI
-        SERVICE_NAME = "springboot-api-service"  // Replace with your actual ECS service name
-        CLUSTER_NAME = "ecommerce-cluster"  // Replace with your actual ECS cluster name
-        AWS_REGION = "us-east-1"  // Replace with your AWS region
-    }            
-    steps {
-        withAWS(credentials: "aws-credentials", region: "${AWS_REGION}") {
-            script {
-                sh '''
-                    # Describe the current task definition
-                    TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition "$TASK_FAMILY" --region "$AWS_REGION")
+            environment {
+                TASK_FAMILY = "backend-api"  
+                ECR_IMAGE = "${ECR_REPO_URI}/${imageName}:latest"  
+                SERVICE_NAME = "springboot-api-service"  
+                CLUSTER_NAME = "ecommerce-cluster"  
+                AWS_REGION = "us-east-1"  
+            }
+            steps {
+                withAWS(credentials: "aws-credentials", region: "${AWS_REGION}") {
+                    script {
+                        sh '''
+                            TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition "$TASK_FAMILY" --region "$AWS_REGION")
 
-                    # Extract the current revision number
-                    OLD_REVISION=$(echo $TASK_DEFINITION | jq '.taskDefinition.revision')
+                            OLD_REVISION=$(echo $TASK_DEFINITION | jq '.taskDefinition.revision')
 
-                    # Create a new task definition JSON with the updated image
-                    NEW_TASK_DEFINITION=$(echo $TASK_DEFINITION | jq --arg IMAGE "$ECR_IMAGE" '.taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)')
+                            NEW_TASK_DEFINITION=$(echo $TASK_DEFINITION | jq --arg IMAGE "$ECR_IMAGE" '.taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)')
 
-                    # Register the new task definition
-                    NEW_TASK_INFO=$(aws ecs register-task-definition --region "$AWS_REGION" --cli-input-json "$NEW_TASK_DEFINITION")
+                            NEW_TASK_INFO=$(aws ecs register-task-definition --region "$AWS_REGION" --cli-input-json "$NEW_TASK_DEFINITION")
 
-                    # Extract the new revision number
-                    NEW_REVISION=$(echo $NEW_TASK_INFO | jq '.taskDefinition.revision')
+                            NEW_REVISION=$(echo $NEW_TASK_INFO | jq '.taskDefinition.revision')
 
-                    # Update the ECS service to use the new task definition revision
-                    aws ecs update-service --cluster ${CLUSTER_NAME} \
-                                           --service ${SERVICE_NAME} \
-                                           --task-definition ${TASK_FAMILY}:${NEW_REVISION}
+                            aws ecs update-service --cluster ${CLUSTER_NAME} \
+                                                   --service ${SERVICE_NAME} \
+                                                   --task-definition ${TASK_FAMILY}:${NEW_REVISION}
 
-                    # Optionally, deregister the old task definition revision to keep the ECS environment clean
-                    aws ecs deregister-task-definition --task-definition ${TASK_FAMILY}:${OLD_REVISION}
-                '''
+                            aws ecs deregister-task-definition --task-definition ${TASK_FAMILY}:${OLD_REVISION}
+                        '''
+                    }
+                }
             }
         }
-    }
-}
-
-        
     }
 
     post {
