@@ -31,11 +31,19 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Install all Dependencies') {
             steps {
                 dir('frontend/angular-ecommerce') {
                     sh 'echo Installing Node.js dependencies...'
                     sh 'npm install'
+                }
+            }
+        }
+          stage('Run Tests') {
+            steps {
+                dir('frontend/angular-ecommerce') {
+                    sh 'echo Running tests...'
+                    sh 'npm run test:ci'
                 }
             }
         }
@@ -49,14 +57,7 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
-            steps {
-                dir('frontend/angular-ecommerce') {
-                    sh 'echo Running tests...'
-                    sh 'npm run test:ci'
-                }
-            }
-        }
+      
 
         stage('Deploy to S3') {
             steps {
