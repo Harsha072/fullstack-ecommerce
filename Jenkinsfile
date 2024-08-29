@@ -63,8 +63,14 @@ pipeline {
             steps {
                 dir('frontend/angular-ecommerce') {
                     script {
-                        // The AWS CLI command to sync the build output to the S3 bucket
-                        sh 'aws s3 sync dist/ s3://travel-buddy-bucket1 --delete --acl public-read'
+                        // Using withCredentials to inject AWS credentials
+                        withCredentials([[
+                            $class: 'AmazonWebServicesCredentialsBinding',
+                            credentialsId: 'aws-credentials'
+                        ]]) {
+                            // The AWS CLI command to sync the build output to the S3 bucket
+                            sh 'aws s3 sync dist/ s3://travel-buddy-bucket1 --delete --acl public-read'
+                        }
                     }
                 }
             }
