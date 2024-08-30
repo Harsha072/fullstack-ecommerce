@@ -23,7 +23,7 @@ export class ProductCategoryComponent implements OnInit {
         this.listProductCategory();
       }
     );
-    
+   
   }
   listProductCategory(){
 this.productCategory.getProductCategory().subscribe(

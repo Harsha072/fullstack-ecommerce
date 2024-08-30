@@ -46,7 +46,7 @@ console.log(this.cartItems.length);
     if (alreadyExistsInCart) { existingCartItem.quantity++; }
     else { this.cartItems.push(theCartItem); }
     //compute cart total price and total quantity
-    // this.computeCartTotals();
+     this.computeCartTotals();
   }
   computeCartTotals() {
     let totalPriceValue: number = 0;
