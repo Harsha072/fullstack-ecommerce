@@ -6,11 +6,11 @@ This project was a Fullstack project with Spring boot and Angualr. Currently usi
 
 ## Roadmap
 
-- Add integrated payment method
-
 - Dockerise the application
 
 - Deploy on AWS
+
+- Improve performance using redis cache
 
 
 ## Features
