@@ -2,7 +2,7 @@
 # Fullstack ecommerce website
 
 This project was a Fullstack project with Spring boot and Angualr. Currently using docker for containerisation and AWS ECS for deployment. It is an ongoing project.
-
+Paused this project to upskill and concentrate on DSA
 
 ## Roadmap
 
